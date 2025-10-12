@@ -93,6 +93,22 @@ public class Teleop extends LinearOpMode
             //  Drive the wheels based on the desired axis motions
             robot.moveRobot(drive, strafe, yaw);
 
+
+            /*
+             * Here we give the user control of the speed of the launcher motor without automatically
+             * queuing a shot.
+             */
+            if (gamepad1.y) {
+                robot.setVelocity(robot.LAUNCHER_TARGET_VELOCITY);
+            } else if (gamepad1.b) { // stop flywheel
+                robot.setVelocity(robot.STOP_SPEED);
+            }
+
+            /*
+             * Now we call our "Launch" function.
+             */
+            robot.launch(gamepad1.rightBumperWasPressed());
+
             // If the robot has just been sitting here for a while, make heading setpoint track any gyro drift to prevent rotating.
             if ((drive == 0) && (strafe == 0) && (yaw == 0)) {
                 if (stopTime.time() > HEADING_HOLD_TIME) {

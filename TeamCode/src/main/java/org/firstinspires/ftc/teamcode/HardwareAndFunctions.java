@@ -9,8 +9,12 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -44,6 +48,20 @@ public class HardwareAndFunctions {
     private static final double YAW_DEADBAND        = 0.25;    // Error less than this causes zero output.  Must be smaller than DRIVE_TOLERANCE
     private static final double YAW_MAX_AUTO        = 0.6;     // "default" Maximum Yaw power limit during autonomous
 
+    public final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
+    public final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
+    public final double FULL_SPEED = 1.0;
+
+    /*
+     * When we control our launcher motor, we are using encoders. These allow the control system
+     * to read the current speed of the motor and apply more or less power to keep it at a constant
+     * velocity. Here we are setting the target, and minimum velocity that the launcher should run
+     * at. The minimum velocity is a threshold for determining when to fire.
+     */
+    public final double LAUNCHER_TARGET_VELOCITY = 1125;
+    public final double LAUNCHER_MIN_VELOCITY = 1075;
+
+
     // Public Members
     public double driveDistance     = 0; // scaled axial distance (+ = forward)
     public double strafeDistance    = 0; // scaled lateral distance (+ = left)
@@ -57,10 +75,13 @@ public class HardwareAndFunctions {
     // ---  Private Members
 
     // Hardware interface Objects
-    private DcMotor leftFrontDrive;     //  control the left front drive wheel
-    private DcMotor rightFrontDrive;    //  control the right front drive wheel
-    private DcMotor leftBackDrive;      //  control the left back drive wheel
-    private DcMotor rightBackDrive;     //  control the right back drive wheel
+    private DcMotorEx leftFrontDrive;     //  control the left front drive wheel
+    private DcMotorEx rightFrontDrive;    //  control the right front drive wheel
+    private DcMotorEx leftBackDrive;      //  control the left back drive wheel
+    private DcMotorEx rightBackDrive;     //  control the right back drive wheel
+    private DcMotorEx launcher;
+    private CRServo leftFeeder;
+    private CRServo rightFeeder;
 
     private DcMotor driveEncoder;       //  the Axial (front/back) Odometry Module (may overlap with motor, or may not)
     private DcMotor strafeEncoder;      //  the Lateral (left/right) Odometry Module (may overlap with motor, or may not)
@@ -68,6 +89,7 @@ public class HardwareAndFunctions {
     private LinearOpMode myOpMode;
     private IMU imu;
     private ElapsedTime holdTimer = new ElapsedTime();  // User for any motion requiring a hold time or timeout.
+    private ElapsedTime feederTimer = new ElapsedTime();
 
     private int rawDriveOdometer    = 0; // Unmodified axial odometer count
     private int driveOdometerOffset = 0; // Used to offset axial odometer
@@ -78,6 +100,14 @@ public class HardwareAndFunctions {
 
     private double turnRate           = 0; // Latest Robot Turn Rate from IMU
     private boolean showTelemetry     = false;
+    public enum LaunchState {
+        IDLE,
+        SPIN_UP,
+        LAUNCH,
+        LAUNCHING,
+    }
+
+    public LaunchState launchState;
 
     // Robot Constructor
     public HardwareAndFunctions(LinearOpMode opmode) {
@@ -92,14 +122,27 @@ public class HardwareAndFunctions {
      */
     public void initialize(boolean showTelemetry)
     {
+        launchState = LaunchState.IDLE;
+
         // Initialize the hardware variables. Note that the strings used to 'get' each
         // motor/device must match the names assigned during the robot configuration.
 
         // !!!  Set the drive direction to ensure positive power drives each wheel forward.
-        leftFrontDrive  = setupDriveMotor("leftFrontMotor", DcMotor.Direction.FORWARD);
-        rightFrontDrive = setupDriveMotor("rightFrontMotor", DcMotor.Direction.REVERSE);
-        leftBackDrive  = setupDriveMotor( "leftBackMotor", DcMotor.Direction.REVERSE);
-        rightBackDrive = setupDriveMotor( "rightBackMotor",DcMotor.Direction.FORWARD);
+        leftFrontDrive  = setupDriveMotor("leftFrontMotor", DcMotorEx.Direction.FORWARD);
+        rightFrontDrive = setupDriveMotor("rightFrontMotor", DcMotorEx.Direction.REVERSE);
+        leftBackDrive  = setupDriveMotor( "leftBackMotor", DcMotorEx.Direction.REVERSE);
+        rightBackDrive = setupDriveMotor( "rightBackMotor",DcMotorEx.Direction.FORWARD);
+        launcher = setupDriveMotor( "launcher",DcMotorEx.Direction.FORWARD);
+
+        leftFeeder = myOpMode.hardwareMap.get(CRServo.class, "left_feeder");
+        rightFeeder = myOpMode.hardwareMap.get(CRServo.class, "right_feeder");
+
+        /*
+         * set Feeders to an initial value to initialize the servo controller
+         */
+        leftFeeder.setPower(STOP_SPEED);
+        rightFeeder.setPower(STOP_SPEED);
+
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
 
         //  Connect to the encoder channels using the name of that channel.
@@ -118,6 +161,14 @@ public class HardwareAndFunctions {
                                              RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
+        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+
+        /*
+         * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
+         * both work to feed the ball into the robot.
+         */
+        leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
+
         // zero out all the odometry readings.
         resetOdometry();
 
@@ -131,12 +182,12 @@ public class HardwareAndFunctions {
      * @param direction   Desired direction to make the wheel run FORWARD with positive power input
      * @return the DcMotor object
      */
-    private DcMotor setupDriveMotor(String deviceName, DcMotor.Direction direction) {
-        DcMotor aMotor = myOpMode.hardwareMap.get(DcMotor.class, deviceName);
+    private DcMotorEx setupDriveMotor(String deviceName, DcMotorEx.Direction direction) {
+        DcMotorEx aMotor = myOpMode.hardwareMap.get(DcMotorEx.class, deviceName);
         aMotor.setDirection(direction);
-        aMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);  // Reset Encoders to zero
-        aMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        aMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);  // Requires motor encoder cables to be hooked up.
+        aMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);  // Reset Encoders to zero
+        aMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        aMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);  // Requires motor encoder cables to be hooked up.
         return aMotor;
     }
 
@@ -339,6 +390,39 @@ public class HardwareAndFunctions {
      */
     public void showTelemetry(boolean show){
         showTelemetry = show;
+    }
+
+    public void setVelocity(double velocity){
+        launcher.setVelocity(velocity);
+    }
+
+    public void launch(boolean shotRequested) {
+        switch (launchState) {
+            case IDLE:
+                if (shotRequested) {
+                    launchState = LaunchState.SPIN_UP;
+                }
+                break;
+            case SPIN_UP:
+                launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+                if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
+                    launchState = LaunchState.LAUNCH;
+                }
+                break;
+            case LAUNCH:
+                leftFeeder.setPower(FULL_SPEED);
+                rightFeeder.setPower(FULL_SPEED);
+                feederTimer.reset();
+                launchState = LaunchState.LAUNCHING;
+                break;
+            case LAUNCHING:
+                if (feederTimer.seconds() > FEED_TIME_SECONDS) {
+                    launchState = LaunchState.IDLE;
+                    leftFeeder.setPower(STOP_SPEED);
+                    rightFeeder.setPower(STOP_SPEED);
+                }
+                break;
+        }
     }
 }
 
