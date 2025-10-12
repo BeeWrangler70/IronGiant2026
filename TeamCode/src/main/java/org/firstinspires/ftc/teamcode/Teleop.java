@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @TeleOp(name="Demo Bot Telop", group = "Mr. Phil")
-public class SampleTeleop extends LinearOpMode
+public class Teleop extends LinearOpMode
 {
     final double SAFE_DRIVE_SPEED   = 0.8 ; // Adjust this to your robot and your driver.  Slower usually means more accuracy.  Max value = 1.0
     final double SAFE_STRAFE_SPEED  = 0.8 ; // Adjust this to your robot and your driver.  Slower usually means more accuracy.  Max value = 1.0
@@ -29,7 +29,7 @@ public class SampleTeleop extends LinearOpMode
     boolean autoHeading    = false; // used to indicate when heading should be locked.
 
     // get an instance of the "Robot" class.
-    SimplifiedOdometryRobot robot = new SimplifiedOdometryRobot(this);
+    HardwareAndFunctions robot = new HardwareAndFunctions(this);
 
     @Override public void runOpMode()
     {

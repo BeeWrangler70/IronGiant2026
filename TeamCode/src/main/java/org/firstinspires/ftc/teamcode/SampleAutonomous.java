@@ -20,7 +20,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class SampleAutonomous extends LinearOpMode
 {
     // get an instance of the "Robot" class.
-    private SimplifiedOdometryRobot robot = new SimplifiedOdometryRobot(this);
+    private HardwareAndFunctions robot = new HardwareAndFunctions(this);
 
     @Override public void runOpMode()
     {
