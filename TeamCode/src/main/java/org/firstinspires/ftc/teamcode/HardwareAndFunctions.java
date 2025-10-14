@@ -6,6 +6,9 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -23,7 +26,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import java.util.List;
-
+//@Config  //Use this to turn on and off variables we may need to change
 public class HardwareAndFunctions {
     // Adjust these numbers to suit your robot.
     private final double ODOM_INCHES_PER_COUNT   = 0.002969;   //  GoBilda Odometry Pod (1/226.8)
@@ -122,6 +125,11 @@ public class HardwareAndFunctions {
      */
     public void initialize(boolean showTelemetry)
     {
+        // Allows us to use the dashboard when running robot
+        // In Browser navigate to 192.168.43.1:8080/dash with a Control Hub
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        myOpMode.telemetry = new MultipleTelemetry(myOpMode.telemetry, dashboard.getTelemetry());
+
         launchState = LaunchState.IDLE;
 
         // Initialize the hardware variables. Note that the strings used to 'get' each
