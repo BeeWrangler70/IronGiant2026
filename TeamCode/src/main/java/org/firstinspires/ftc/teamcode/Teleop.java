@@ -43,7 +43,7 @@ public class Teleop extends LinearOpMode
             // Read and display sensor data
             robot.readSensors();
             telemetry.update();
-        };
+        }
 
         while (opModeIsActive())
         {
@@ -57,22 +57,17 @@ public class Teleop extends LinearOpMode
 
             // read joystick values and scale according to limits set at top of this file
             double drive  = -gamepad1.left_stick_y * SAFE_DRIVE_SPEED;      //  Fwd/back on left stick
-//            double strafe = -gamepad1.left_stick_x * SAFE_STRAFE_SPEED;     //  Left/Right on left stick
             double strafe = 0;     //  Left/Right on left stick
             double yaw    = -gamepad1.right_stick_x * SAFE_YAW_SPEED;       //  Rotate on right stick
 
             //  OR... For special conditions, Use the DPAD to make pure orthoginal motions
-            if (gamepad1.dpad_left) {
-//                strafe = SAFE_DRIVE_SPEED / 2.0;
-            } else if (gamepad1.dpad_right) {
-//                strafe = -SAFE_DRIVE_SPEED / 2.0;
-            } else if (gamepad1.dpad_up) {
+            if (gamepad1.dpad_up) {
                 drive = SAFE_DRIVE_SPEED / 2.0;
             } else if (gamepad1.dpad_down) {
                 drive = -SAFE_STRAFE_SPEED / 2.0;
             }
 
-            // This is where we heep the robot heading locked so it doesn't turn while driving or strafing in a straight line.
+            // This is where we keep the robot heading locked so it doesn't turn while driving or strafing in a straight line.
             // Is the driver turning the robot, or should it hold its heading?
             if (Math.abs(yaw) > 0.05) {
                 // driver is commanding robot to turn, so turn off auto heading.
@@ -93,24 +88,8 @@ public class Teleop extends LinearOpMode
             //  Drive the wheels based on the desired axis motions
             robot.moveRobot(drive, strafe, yaw);
 
-
-            /*
-             * Here we give the user control of the speed of the launcher motor without automatically
-             * queuing a shot.
-             */
-            if (gamepad1.y) {
-                robot.setVelocity(robot.LAUNCHER_TARGET_VELOCITY);
-            } else if (gamepad1.b) { // stop flywheel
-                robot.setVelocity(robot.STOP_SPEED);
-            }
-
-            /*
-             * Now we call our "Launch" function.
-             */
-            robot.launch(gamepad1.rightBumperWasPressed());
-
             // If the robot has just been sitting here for a while, make heading setpoint track any gyro drift to prevent rotating.
-            if ((drive == 0) && (strafe == 0) && (yaw == 0)) {
+            if ((drive == 0) && (yaw == 0)) {
                 if (stopTime.time() > HEADING_HOLD_TIME) {
                     robot.yawController.reset(robot.getHeading());  // just keep tracking the current heading
                 }
