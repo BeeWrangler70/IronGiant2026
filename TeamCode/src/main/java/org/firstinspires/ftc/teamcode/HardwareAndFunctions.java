@@ -103,14 +103,6 @@ public class HardwareAndFunctions {
 
     private double turnRate           = 0; // Latest Robot Turn Rate from IMU
     private boolean showTelemetry     = false;
-    public enum LaunchState {
-        IDLE,
-        SPIN_UP,
-        LAUNCH,
-        LAUNCHING,
-    }
-
-    public LaunchState launchState;
 
     // Robot Constructor
     public HardwareAndFunctions(LinearOpMode opmode) {
@@ -130,26 +122,14 @@ public class HardwareAndFunctions {
         FtcDashboard dashboard = FtcDashboard.getInstance();
         myOpMode.telemetry = new MultipleTelemetry(myOpMode.telemetry, dashboard.getTelemetry());
 
-        launchState = LaunchState.IDLE;
-
         // Initialize the hardware variables. Note that the strings used to 'get' each
         // motor/device must match the names assigned during the robot configuration.
 
         // !!!  Set the drive direction to ensure positive power drives each wheel forward.
         leftFrontDrive  = setupDriveMotor("leftFrontMotor", DcMotorEx.Direction.FORWARD);
-        rightFrontDrive = setupDriveMotor("rightFrontMotor", DcMotorEx.Direction.REVERSE);
+        rightFrontDrive = setupDriveMotor("rightFrontMotor", DcMotorEx.Direction.FORWARD);
         leftBackDrive  = setupDriveMotor( "leftBackMotor", DcMotorEx.Direction.REVERSE);
         rightBackDrive = setupDriveMotor( "rightBackMotor",DcMotorEx.Direction.FORWARD);
-        launcher = setupDriveMotor( "launcher",DcMotorEx.Direction.FORWARD);
-
-        leftFeeder = myOpMode.hardwareMap.get(CRServo.class, "left_feeder");
-        rightFeeder = myOpMode.hardwareMap.get(CRServo.class, "right_feeder");
-
-        /*
-         * set Feeders to an initial value to initialize the servo controller
-         */
-        leftFeeder.setPower(STOP_SPEED);
-        rightFeeder.setPower(STOP_SPEED);
 
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
 
@@ -168,14 +148,6 @@ public class HardwareAndFunctions {
                 new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP,
                                              RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
-
-        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
-
-        /*
-         * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
-         * both work to feed the ball into the robot.
-         */
-        leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // zero out all the odometry readings.
         resetOdometry();
@@ -400,38 +372,6 @@ public class HardwareAndFunctions {
         showTelemetry = show;
     }
 
-    public void setVelocity(double velocity){
-        launcher.setVelocity(velocity);
-    }
-
-    public void launch(boolean shotRequested) {
-        switch (launchState) {
-            case IDLE:
-                if (shotRequested) {
-                    launchState = LaunchState.SPIN_UP;
-                }
-                break;
-            case SPIN_UP:
-                launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-                    launchState = LaunchState.LAUNCH;
-                }
-                break;
-            case LAUNCH:
-                leftFeeder.setPower(FULL_SPEED);
-                rightFeeder.setPower(FULL_SPEED);
-                feederTimer.reset();
-                launchState = LaunchState.LAUNCHING;
-                break;
-            case LAUNCHING:
-                if (feederTimer.seconds() > FEED_TIME_SECONDS) {
-                    launchState = LaunchState.IDLE;
-                    leftFeeder.setPower(STOP_SPEED);
-                    rightFeeder.setPower(STOP_SPEED);
-                }
-                break;
-        }
-    }
 }
 
 //****************************************************************************************************
