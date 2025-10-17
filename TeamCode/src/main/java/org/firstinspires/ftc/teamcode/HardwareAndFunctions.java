@@ -6,12 +6,18 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -20,12 +26,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import java.util.List;
-
+//@Config  //Use this to turn on and off variables we may need to change
 public class HardwareAndFunctions {
     // Adjust these numbers to suit your robot.
     private final double ODOM_INCHES_PER_COUNT   = 0.002969;   //  GoBilda Odometry Pod (1/226.8)
-//    private final boolean INVERT_DRIVE_ODOMETRY  = true;       //  When driving FORWARD, the odometry value MUST increase.  If it does not, flip the value of this constant.
-//    private final boolean INVERT_STRAFE_ODOMETRY = true;       //  When strafing to the LEFT, the odometry value MUST increase.  If it does not, flip the value of this constant.
+    private final boolean INVERT_DRIVE_ODOMETRY  = true;       //  When driving FORWARD, the odometry value MUST increase.  If it does not, flip the value of this constant.
+    private final boolean INVERT_STRAFE_ODOMETRY = true;       //  When strafing to the LEFT, the odometry value MUST increase.  If it does not, flip the value of this constant.
 
     private static final double DRIVE_GAIN          = 0.03;    // Strength of axial position control
     private static final double DRIVE_ACCEL         = 2.0;     // Acceleration limit.  Percent Power change per second.  1.0 = 0-100% power in 1 sec.
@@ -45,9 +51,19 @@ public class HardwareAndFunctions {
     private static final double YAW_DEADBAND        = 0.25;    // Error less than this causes zero output.  Must be smaller than DRIVE_TOLERANCE
     private static final double YAW_MAX_AUTO        = 0.6;     // "default" Maximum Yaw power limit during autonomous
 
-//    public final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
-//    public final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-//    public final double FULL_SPEED = 1.0;
+    public final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
+    public final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
+    public final double FULL_SPEED = 1.0;
+
+    /*
+     * When we control our launcher motor, we are using encoders. These allow the control system
+     * to read the current speed of the motor and apply more or less power to keep it at a constant
+     * velocity. Here we are setting the target, and minimum velocity that the launcher should run
+     * at. The minimum velocity is a threshold for determining when to fire.
+     */
+    public final double LAUNCHER_TARGET_VELOCITY = 1125;
+    public final double LAUNCHER_MIN_VELOCITY = 1075;
+
 
     // Public Members
     public double driveDistance     = 0; // scaled axial distance (+ = forward)
@@ -66,12 +82,18 @@ public class HardwareAndFunctions {
     private DcMotorEx rightFrontDrive;    //  control the right front drive wheel
     private DcMotorEx leftBackDrive;      //  control the left back drive wheel
     private DcMotorEx rightBackDrive;     //  control the right back drive wheel
-//    private DcMotor driveEncoder;       //  the Axial (front/back) Odometry Module (may overlap with motor, or may not)
-//    private DcMotor strafeEncoder;      //  the Lateral (left/right) Odometry Module (may overlap with motor, or may not)
+    private DcMotorEx launcher;
+    private CRServo leftFeeder;
+    private CRServo rightFeeder;
+
+    private DcMotor driveEncoder;       //  the Axial (front/back) Odometry Module (may overlap with motor, or may not)
+    private DcMotor strafeEncoder;      //  the Lateral (left/right) Odometry Module (may overlap with motor, or may not)
 
     private LinearOpMode myOpMode;
     private IMU imu;
     private ElapsedTime holdTimer = new ElapsedTime();  // User for any motion requiring a hold time or timeout.
+    private ElapsedTime feederTimer = new ElapsedTime();
+
     private int rawDriveOdometer    = 0; // Unmodified axial odometer count
     private int driveOdometerOffset = 0; // Used to offset axial odometer
     private int rawStrafeOdometer   = 0; // Unmodified lateral odometer count
@@ -95,12 +117,17 @@ public class HardwareAndFunctions {
      */
     public void initialize(boolean showTelemetry)
     {
+        // Allows us to use the dashboard when running robot
+        // In Browser navigate to 192.168.43.1:8080/dash with a Control Hub
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        myOpMode.telemetry = new MultipleTelemetry(myOpMode.telemetry, dashboard.getTelemetry());
+
         // Initialize the hardware variables. Note that the strings used to 'get' each
         // motor/device must match the names assigned during the robot configuration.
 
         // !!!  Set the drive direction to ensure positive power drives each wheel forward.
         leftFrontDrive  = setupDriveMotor("leftFrontMotor", DcMotorEx.Direction.FORWARD);
-        rightFrontDrive = setupDriveMotor("rightFrontMotor", DcMotorEx.Direction.REVERSE);
+        rightFrontDrive = setupDriveMotor("rightFrontMotor", DcMotorEx.Direction.FORWARD);
         leftBackDrive  = setupDriveMotor( "leftBackMotor", DcMotorEx.Direction.REVERSE);
         rightBackDrive = setupDriveMotor( "rightBackMotor",DcMotorEx.Direction.FORWARD);
 
