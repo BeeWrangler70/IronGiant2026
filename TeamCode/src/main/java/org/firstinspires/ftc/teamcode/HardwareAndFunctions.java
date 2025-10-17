@@ -26,7 +26,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import java.util.List;
-//@Config  //Use this to turn on and off variables we may need to change
+@Config  //Use this to turn on and off variables we may need to change
 public class HardwareAndFunctions {
     // Adjust these numbers to suit your robot.
     private final double ODOM_INCHES_PER_COUNT   = 0.002969;   //  GoBilda Odometry Pod (1/226.8)
