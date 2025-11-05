@@ -123,8 +123,8 @@ public class HardwareAndFunctions {
     {
         // Allows us to use the dashboard when running robot
         // In Browser navigate to 192.168.43.1:8080/dash with a Control Hub
- //       FtcDashboard dashboard = FtcDashboard.getInstance();
- //       myOpMode.telemetry = new MultipleTelemetry(myOpMode.telemetry, dashboard.getTelemetry());
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        myOpMode.telemetry = new MultipleTelemetry(myOpMode.telemetry, dashboard.getTelemetry());
 
         // Initialize the hardware variables. Note that the strings used to 'get' each
         // motor/device must match the names assigned during the robot configuration.
@@ -205,8 +205,11 @@ public class HardwareAndFunctions {
         turnRate    = angularVelocity.zRotationRate;
 
         if (showTelemetry) {
-            myOpMode.telemetry.addData("Odom Ax:Lat", "%6d %6d", rawDriveOdometer - driveOdometerOffset, rawStrafeOdometer - strafeOdometerOffset);
+            myOpMode.telemetry.addData("Odom Ax:Lat", "%5.2f %5.2f", rawDriveOdometer - driveOdometerOffset, rawStrafeOdometer - strafeOdometerOffset);
             myOpMode.telemetry.addData("Dist Ax:Lat", "%5.2f %5.2f", driveDistance, strafeDistance);
+            myOpMode.telemetry.addData("X coordinate", pos.x);
+            myOpMode.telemetry.addData("Y coordinate", pos.y);
+            myOpMode.telemetry.addData("Heading angle", pos.h);
             myOpMode.telemetry.update();
         }
 
@@ -340,12 +343,6 @@ public class HardwareAndFunctions {
         rightFrontDrive.setPower(rF);
         leftBackDrive.setPower(lB);
         rightBackDrive.setPower(rB);
-
-        if (showTelemetry) {
-            myOpMode.telemetry.addData("Axes D:S:Y", "%5.2f %5.2f %5.2f", drive, strafe, yaw);
-            myOpMode.telemetry.addData("Wheels lf:rf:lb:rb", "%5.2f %5.2f %5.2f %5.2f", lF, rF, lB, rB);
-            myOpMode.telemetry.update(); //  Assume this is the last thing done in the loop.
-        }
     }
 
     /**

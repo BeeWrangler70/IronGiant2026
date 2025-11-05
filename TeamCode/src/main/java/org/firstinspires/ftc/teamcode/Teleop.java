@@ -34,7 +34,7 @@ public class Teleop extends LinearOpMode
     @Override public void runOpMode()
     {
         // Initialize the drive hardware & Turn on telemetry
-        robot.initialize(false);
+        robot.initialize(true);
         // Wait for driver to press start
         while(opModeInInit()) {
             telemetry.addData(">", "Touch Play to drive");
