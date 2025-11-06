@@ -38,18 +38,21 @@ public class BlueAutonomous extends LinearOpMode
         // Run Auto if stop was not pressed.
         if (opModeIsActive())
         {
-            // Note, this example takes more than 30 seconds to execute, so turn OFF the auto timer.
-            robot.drive(  -63.5, 0.60, 0.25);
-            robot.turnTo(120, 0.45, 0.5);
-            robot.drive(  -81, 0.60, 0.25);
-            robot.turnTo(350, 0.45, 0.5);
+            // Note, this example takes less than 30 seconds to execute, so turn OFF the auto timer.
+            robot.drive(  51, 0.90, 0.25);
+            robot.turnTo(120, .45, 0.5);
+            robot.drive(  76, 0.90, 0.25);
+            robot.turnTo(20, 0.80, 0.5);
+            sleep(3000);
             //shoot 3 times here
-            //:D
+            robot.turnTo(270, 0.8, 0.5);
             // DO YOU KNO DA WAE
 
+            //Drive a path again without turning.
+            //robot.strafe(92, 0.8, 0.25);
             //Drive a large rectangle, turning at each corner
-            //robot.drive(  30, 0.60, 0.25);
-            //robot.turnTo(90, 0.45, 0.5);
+//            robot.drive(  30, 0.60, 0.25);
+//            robot.turnTo(90, 0.45, 0.5);
             //robot.drive(  30, 0.60, 0.25);
             //robot.turnTo(180, 0.45, 0.5);
             //robot.drive(  30, 0.60, 0.25);
