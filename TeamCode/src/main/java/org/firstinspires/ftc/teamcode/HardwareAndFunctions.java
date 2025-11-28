@@ -84,6 +84,7 @@ public class HardwareAndFunctions {
     private DcMotorEx rightFrontDrive;    //  control the right front drive wheel
     private DcMotorEx leftBackDrive;      //  control the left back drive wheel
     private DcMotorEx rightBackDrive;     //  control the right back drive wheel
+    private DcMotorEx liftMotor1;
     private DcMotorEx launcher;
     private CRServo leftFeeder;
     private CRServo rightFeeder;
@@ -134,6 +135,8 @@ public class HardwareAndFunctions {
         rightFrontDrive = setupDriveMotor("rightFrontMotor", DcMotorEx.Direction.FORWARD);
         leftBackDrive  = setupDriveMotor( "leftBackMotor", DcMotorEx.Direction.REVERSE);
         rightBackDrive = setupDriveMotor( "rightBackMotor",DcMotorEx.Direction.FORWARD);
+
+        liftMotor1 = setupDriveMotor( "liftMotor1",DcMotorEx.Direction.FORWARD);
 
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
 
