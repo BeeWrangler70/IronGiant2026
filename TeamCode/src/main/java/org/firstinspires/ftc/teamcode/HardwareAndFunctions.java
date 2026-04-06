@@ -30,10 +30,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import java.util.List;
 @Config  //Use this to turn on and off variables we may need to change
 public class HardwareAndFunctions {
-    // Adjust these numbers to suit your robot.
-    private final double ODOM_INCHES_PER_COUNT   = 0.002969;   //  GoBilda Odometry Pod (1/226.8)
-    private final boolean INVERT_DRIVE_ODOMETRY  = true;       //  When driving FORWARD, the odometry value MUST increase.  If it does not, flip the value of this constant.
-    private final boolean INVERT_STRAFE_ODOMETRY = true;       //  When strafing to the LEFT, the odometry value MUST increase.  If it does not, flip the value of this constant.
 
     private static final double DRIVE_GAIN          = 0.03;    // Strength of axial position control
     private static final double DRIVE_ACCEL         = 2.0;     // Acceleration limit.  Percent Power change per second.  1.0 = 0-100% power in 1 sec.
@@ -53,19 +49,6 @@ public class HardwareAndFunctions {
     private static final double YAW_DEADBAND        = 0.25;    // Error less than this causes zero output.  Must be smaller than DRIVE_TOLERANCE
     private static final double YAW_MAX_AUTO        = 0.6;     // "default" Maximum Yaw power limit during autonomous
 
-    public final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
-    public final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-    public final double FULL_SPEED = 1.0;
-
-    /*
-     * When we control our launcher motor, we are using encoders. These allow the control system
-     * to read the current speed of the motor and apply more or less power to keep it at a constant
-     * velocity. Here we are setting the target, and minimum velocity that the launcher should run
-     * at. The minimum velocity is a threshold for determining when to fire.
-     */
-    public final double LAUNCHER_TARGET_VELOCITY = 1125;
-    public final double LAUNCHER_MIN_VELOCITY = 1075;
-
 
     // Public Members
     public double driveDistance     = 0; // scaled axial distance (+ = forward)
@@ -84,20 +67,12 @@ public class HardwareAndFunctions {
     private DcMotorEx rightFrontDrive;    //  control the right front drive wheel
     private DcMotorEx leftBackDrive;      //  control the left back drive wheel
     private DcMotorEx rightBackDrive;     //  control the right back drive wheel
-    private DcMotorEx liftMotor1;
-    private DcMotorEx launcher;
-    private CRServo leftFeeder;
-    private CRServo rightFeeder;
-
-    private DcMotor driveEncoder;       //  the Axial (front/back) Odometry Module (may overlap with motor, or may not)
-    private DcMotor strafeEncoder;      //  the Lateral (left/right) Odometry Module (may overlap with motor, or may not)
 
     public SparkFunOTOS myOtos;
 
     private LinearOpMode myOpMode;
     public IMU imu;
     private ElapsedTime holdTimer = new ElapsedTime();  // User for any motion requiring a hold time or timeout.
-    private ElapsedTime feederTimer = new ElapsedTime();
 
     private double rawDriveOdometer    = 0; // Unmodified axial odometer count
     private double driveOdometerOffset = 0; // Used to offset axial odometer
@@ -131,12 +106,10 @@ public class HardwareAndFunctions {
         // motor/device must match the names assigned during the robot configuration.
 
         // !!!  Set the drive direction to ensure positive power drives each wheel forward.
-        leftFrontDrive  = setupDriveMotor("leftFrontMotor", DcMotorEx.Direction.FORWARD);
-        rightFrontDrive = setupDriveMotor("rightFrontMotor", DcMotorEx.Direction.FORWARD);
-        leftBackDrive  = setupDriveMotor( "leftBackMotor", DcMotorEx.Direction.REVERSE);
-        rightBackDrive = setupDriveMotor( "rightBackMotor",DcMotorEx.Direction.FORWARD);
-
-        liftMotor1 = setupDriveMotor( "liftMotor1",DcMotorEx.Direction.FORWARD);
+        leftFrontDrive  = setupDriveMotor("lf", DcMotorEx.Direction.REVERSE);
+        rightFrontDrive = setupDriveMotor("rf", DcMotorEx.Direction.FORWARD);
+        leftBackDrive  = setupDriveMotor( "lb", DcMotorEx.Direction.REVERSE);
+        rightBackDrive = setupDriveMotor( "rb",DcMotorEx.Direction.FORWARD);
 
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
 
@@ -149,12 +122,6 @@ public class HardwareAndFunctions {
         for (LynxModule module : allHubs) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
-
-        // Get a reference to the sensor
-        myOtos = myOpMode.hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
-
-        // All the configuration for the OTOS is done in this helper method, check it out!
-        initializeSunSparkOpticalSensor();
 
         // Tell the software how the Control Hub is mounted on the robot to align the IMU XYZ axes correctly
         RevHubOrientationOnRobot orientationOnRobot =
@@ -192,10 +159,6 @@ public class HardwareAndFunctions {
     public boolean readSensors() {
         // Get the latest position, which includes the x and y coordinates, plus the
         // heading angle
-        SparkFunOTOS.Pose2D pos = myOtos.getPosition();
-
-        rawDriveOdometer =  pos.x;// * (INVERT_DRIVE_ODOMETRY ? -1 : 1);   // direction forward/back
-        rawStrafeOdometer = pos.y;// * (INVERT_STRAFE_ODOMETRY ? -1 : 1);   // direction left/right
 
         driveDistance = (rawDriveOdometer - driveOdometerOffset);
         strafeDistance = (rawStrafeOdometer - strafeOdometerOffset);
@@ -210,9 +173,6 @@ public class HardwareAndFunctions {
         if (showTelemetry) {
             myOpMode.telemetry.addData("Odom Ax:Lat", "%5.2f %5.2f", rawDriveOdometer - driveOdometerOffset, rawStrafeOdometer - strafeOdometerOffset);
             myOpMode.telemetry.addData("Dist Ax:Lat", "%5.2f %5.2f", driveDistance, strafeDistance);
-            myOpMode.telemetry.addData("X coordinate", pos.x);
-            myOpMode.telemetry.addData("Y coordinate", pos.y);
-            myOpMode.telemetry.addData("Heading angle", pos.h);
             myOpMode.telemetry.update();
         }
 
@@ -359,7 +319,7 @@ public class HardwareAndFunctions {
      * Set odometry counts and distances to zero.
      */
     public void resetOdometry() {
-        myOtos.resetTracking();
+//        myOtos.resetTracking();
 
         readSensors();
 
