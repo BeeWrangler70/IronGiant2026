@@ -114,13 +114,10 @@ public class TeleOp extends LinearOpMode {
                 }
             }
 
-            // 3. Trigger Single Launch sequence on Right Bumper Single Press
-            if (operator.rightBumperOnce()) {
-//                launcher.launcherFeeder.setPower(1);
-                launcher.leftSweeper.setPower(1);
-                launcher.rightSweeper.setPower(1);
+            // 2. Toggle Intake and Sweepers ON / OFF with 'X' Button single press
+            if (operator.xOnce()) {
+                robot.toggleIntake();
             }
-
 
             // ==========================================
             // --- TELEMETRY / DIAGNOSTICS ---
@@ -136,6 +133,7 @@ public class TeleOp extends LinearOpMode {
 
             telemetry.addData("--- Operator (Gamepad 2) ---", "");
             telemetry.addData("Launcher Status", launcherActive ? "RUNNING" : "STOPPED");
+            telemetry.addData("Intake Status", robot.intakeSubsystem.isIntakeActive() ? "RUNNING" : "STOPPED");
             telemetry.addData("Target Velocity", "%.0f Ticks/Sec", launcher.launcherTargetVelocity);
             telemetry.addData("Current Velocity", "%.0f Ticks/Sec", launcher.getVelocity());
 

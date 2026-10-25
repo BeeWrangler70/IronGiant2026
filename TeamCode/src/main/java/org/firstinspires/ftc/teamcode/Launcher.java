@@ -27,8 +27,6 @@ public class Launcher {
     // Hardware Interface Objects
     public DcMotorEx launcherMotor;
     public CRServo launcherFeeder;
-    public CRServo leftSweeper;
-    public CRServo rightSweeper;
 
     // State Machine
     public enum LaunchState {
@@ -60,12 +58,6 @@ public class Launcher {
 
         launcherFeeder = hardwareMap.crservo.get("launcher_feeder");
         launcherFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
-
-        leftSweeper = hardwareMap.crservo.get("left_sweeper");
-        leftSweeper.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        rightSweeper = hardwareMap.crservo.get("right_sweeper");
-        rightSweeper.setDirection(DcMotorSimple.Direction.FORWARD);
 
         stopLauncher();
         launchState = LaunchState.IDLE;

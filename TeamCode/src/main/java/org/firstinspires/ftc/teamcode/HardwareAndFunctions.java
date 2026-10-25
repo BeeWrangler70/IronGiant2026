@@ -13,11 +13,8 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -34,13 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HardwareAndFunctions {
-    public static double FEED_TIME_SECONDS = .1;  //The feeder servos run this long when a shot is requested.
-    public static double LAUNCH_DELAY_SECONDS = 1;  //The feeder servos run this long when a shot is requested.
-    public final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-    public final double FULL_SPEED = 1.0;
     private final boolean INVERT_DRIVE_ODOMETRY  = false;       //  When driving FORWARD, the odometry value MUST increase.  If it does not, flip the value of this constant.
     private final boolean INVERT_STRAFE_ODOMETRY = false;       //  When strafing to the LEFT, the odometry value MUST increase.  If it does not, flip the value of this constant.
-
     public final double DRIVE_GAIN          = .06;    // Strength of axial position control
     public final double DRIVE_ACCEL         = 10;     // Acceleration limit.  Percent Power change per second.  1.0 = 0-100% power in 1 sec.
     public final double DRIVE_TOLERANCE     = .5;     // Controller is is "inPosition" if position error is < +/- this amount
@@ -59,8 +51,9 @@ public class HardwareAndFunctions {
     private final  double YAW_DEADBAND        = 0.25;    // Error less than this causes zero output.  Must be smaller than DRIVE_TOLERANCE
     private final  double YAW_MAX_AUTO        = 1.0;     // "default" Maximum Yaw power limit during autonomous
 
-    // Dedicated Launcher Subsystem Instance
+    // Dedicated Subsystems
     public Launcher launcherSubsystem = new Launcher();
+    public Intake intakeSubsystem = new Intake();
 
     // Public Members
     public double driveDistance     = 0; // scaled axial distance (+ = forward)
@@ -79,7 +72,6 @@ public class HardwareAndFunctions {
     private DcMotorEx rightFrontDrive;    //  control the right front drive wheel
     private DcMotorEx leftBackDrive;      //  control the left back drive wheel
     private DcMotorEx rightBackDrive;     //  control the right back drive wheel
-    private DcMotorEx intake;               // intake motor
 
     private LinearOpMode myOpMode;
     public IMU imu;
@@ -119,8 +111,9 @@ public class HardwareAndFunctions {
             telop = false;
         }
 
-        // Initialize the dedicated Launcher Subsystem
+        // Initialize the dedicated Launcher & Intake Subsystem
         launcherSubsystem.init(myOpMode.hardwareMap);
+        intakeSubsystem.init(myOpMode.hardwareMap);
 
         // Initialize the hardware variables. Note that the strings used to 'get' each
         // motor/device must match the names assigned during the robot configuration.
@@ -130,8 +123,6 @@ public class HardwareAndFunctions {
         rightFrontDrive = setupDriveMotor("rf", DcMotorEx.Direction.FORWARD);  //Control Hub 2
         leftBackDrive  = setupDriveMotor( "lb", DcMotorEx.Direction.REVERSE);    //Control Hub 1
         rightBackDrive = setupDriveMotor( "rb",DcMotorEx.Direction.FORWARD);    //Control Hub 0
-
-        intake = setupDriveMotor( "intake",DcMotorEx.Direction.FORWARD);
 
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
 
@@ -517,6 +508,24 @@ public class HardwareAndFunctions {
 
     public void setLaunchCountZero() {
         launcherSubsystem.setLaunchCountZero();
+    }
+
+    // --- Intake Subsystem Methods ---
+
+    public void setIntakePower(double power) {
+        intakeSubsystem.setPower(power);
+    }
+
+    public void turnOnIntake() {
+        intakeSubsystem.turnOn();
+    }
+
+    public void stopIntake() {
+        intakeSubsystem.stop();
+    }
+
+    public void toggleIntake() {
+        intakeSubsystem.toggle();
     }
 }
 
