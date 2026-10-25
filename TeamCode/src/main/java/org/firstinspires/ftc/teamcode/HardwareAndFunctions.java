@@ -4,16 +4,15 @@
     See the readme for a link to a video tutorial explaining the operation and limitations of the code.
  */
 
+
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -25,30 +24,43 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.util.ArrayList;
 import java.util.List;
-@Config  //Use this to turn on and off variables we may need to change
+
 public class HardwareAndFunctions {
+    public static double FEED_TIME_SECONDS = .1;  //The feeder servos run this long when a shot is requested.
+    public static double LAUNCH_DELAY_SECONDS = 1;  //The feeder servos run this long when a shot is requested.
+    public final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
+    public final double FULL_SPEED = 1.0;
+    private final boolean INVERT_DRIVE_ODOMETRY  = false;       //  When driving FORWARD, the odometry value MUST increase.  If it does not, flip the value of this constant.
+    private final boolean INVERT_STRAFE_ODOMETRY = false;       //  When strafing to the LEFT, the odometry value MUST increase.  If it does not, flip the value of this constant.
 
-    private static final double DRIVE_GAIN          = 0.03;    // Strength of axial position control
-    private static final double DRIVE_ACCEL         = 2.0;     // Acceleration limit.  Percent Power change per second.  1.0 = 0-100% power in 1 sec.
-    private static final double DRIVE_TOLERANCE     = 0.5;     // Controller is is "inPosition" if position error is < +/- this amount
-    private static final double DRIVE_DEADBAND      = 0.2;     // Error less than this causes zero output.  Must be smaller than DRIVE_TOLERANCE
-    private static final double DRIVE_MAX_AUTO      = 0.6;     // "default" Maximum Axial power limit during autonomous
+    public final double DRIVE_GAIN          = .06;    // Strength of axial position control
+    public final double DRIVE_ACCEL         = 10;     // Acceleration limit.  Percent Power change per second.  1.0 = 0-100% power in 1 sec.
+    public final double DRIVE_TOLERANCE     = .5;     // Controller is is "inPosition" if position error is < +/- this amount
+    public final double DRIVE_DEADBAND      = 0.4;     // Error less than this causes zero output.  Must be smaller than DRIVE_TOLERANCE
+    public final double DRIVE_MAX_AUTO      = 1;     // "default" Maximum Axial power limit during autonomous
 
-    private static final double STRAFE_GAIN         = 0.03;    // Strength of lateral position control
-    private static final double STRAFE_ACCEL        = 1.5;     // Acceleration limit.  Percent Power change per second.  1.0 = 0-100% power in 1 sec.
-    private static final double STRAFE_TOLERANCE    = 0.5;     // Controller is is "inPosition" if position error is < +/- this amount
-    private static final double STRAFE_DEADBAND     = 0.2;     // Error less than this causes zero output.  Must be smaller than DRIVE_TOLERANCE
-    private static final double STRAFE_MAX_AUTO     = 0.6;     // "default" Maximum Lateral power limit during autonomous
+    public final double STRAFE_GAIN		 = 0.06;	// Strength of lateral position control
+    public final double STRAFE_ACCEL		= 10;	 // Acceleration limit.  Percent Power change per second.  1.0 = 0-100% power in 1 sec.
+    public final double STRAFE_TOLERANCE	= .5;	 // Controller is is "inPosition" if position error is < +/- this amount
+    public final double STRAFE_DEADBAND	 = 0.2;	 // Error less than this causes zero output.  Must be smaller than DRIVE_TOLERANCE
+    public final double STRAFE_MAX_AUTO	 = .6;	 // "default" Maximum Lateral power limit during autonomous
 
-    private static final double YAW_GAIN            = 0.018;    // Strength of Yaw position control
-    private static final double YAW_ACCEL           = 3.0;     // Acceleration limit.  Percent Power change per second.  1.0 = 0-100% power in 1 sec.
-    private static final double YAW_TOLERANCE       = 1.0;     // Controller is is "inPosition" if position error is < +/- this amount
-    private static final double YAW_DEADBAND        = 0.25;    // Error less than this causes zero output.  Must be smaller than DRIVE_TOLERANCE
-    private static final double YAW_MAX_AUTO        = 0.6;     // "default" Maximum Yaw power limit during autonomous
+    private final  double YAW_GAIN            = 0.018;    // Strength of Yaw position control
+    private final  double YAW_ACCEL           = 6.0;     // Acceleration limit.  Percent Power change per second.  1.0 = 0-100% power in 1 sec.
+    private final  double YAW_TOLERANCE       = .25;     // Controller is is "inPosition" if position error is < +/- this amount
+    private final  double YAW_DEADBAND        = 0.25;    // Error less than this causes zero output.  Must be smaller than DRIVE_TOLERANCE
+    private final  double YAW_MAX_AUTO        = 1.0;     // "default" Maximum Yaw power limit during autonomous
 
+    // Dedicated Launcher Subsystem Instance
+    public Launcher launcherSubsystem = new Launcher();
 
     // Public Members
     public double driveDistance     = 0; // scaled axial distance (+ = forward)
@@ -67,22 +79,25 @@ public class HardwareAndFunctions {
     private DcMotorEx rightFrontDrive;    //  control the right front drive wheel
     private DcMotorEx leftBackDrive;      //  control the left back drive wheel
     private DcMotorEx rightBackDrive;     //  control the right back drive wheel
-
-    public SparkFunOTOS myOtos;
+    private DcMotorEx intake;               // intake motor
 
     private LinearOpMode myOpMode;
     public IMU imu;
-    private ElapsedTime holdTimer = new ElapsedTime();  // User for any motion requiring a hold time or timeout.
 
-    private double rawDriveOdometer    = 0; // Unmodified axial odometer count
-    private double driveOdometerOffset = 0; // Used to offset axial odometer
-    private double rawStrafeOdometer   = 0; // Unmodified lateral odometer count
-    private double strafeOdometerOffset= 0; // Used to offset lateral odometer
+    GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
+
+    private ElapsedTime holdTimer = new ElapsedTime();  // User for any motion requiring a hold time or timeout.
     private double rawHeading       = 0; // Unmodified heading (degrees)
     private double headingOffset    = 0; // Used to offset heading
 
     private double turnRate           = 0; // Latest Robot Turn Rate from IMU
     private boolean showTelemetry     = false;
+
+    boolean telop;
+    private AprilTagProcessor aprilTagProcessor;
+    public VisionPortal visionPortal;
+    public List<AprilTagDetection> detectedTags = new ArrayList<>();
+    public AprilTagWebcam aprilTagWebcam = new AprilTagWebcam();
 
     // Robot Constructor
     public HardwareAndFunctions(LinearOpMode opmode) {
@@ -97,25 +112,28 @@ public class HardwareAndFunctions {
      */
     public void initialize(boolean showTelemetry)
     {
-        // Allows us to use the dashboard when running robot
-        // In Browser navigate to 192.168.43.1:8080/dash with a Control Hub
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        myOpMode.telemetry = new MultipleTelemetry(myOpMode.telemetry, dashboard.getTelemetry());
+
+        if (myOpMode.getClass().isAnnotationPresent(TeleOp.class)) {
+            telop = true;
+            } else {
+            telop = false;
+        }
+
+        // Initialize the dedicated Launcher Subsystem
+        launcherSubsystem.init(myOpMode.hardwareMap);
 
         // Initialize the hardware variables. Note that the strings used to 'get' each
         // motor/device must match the names assigned during the robot configuration.
 
         // !!!  Set the drive direction to ensure positive power drives each wheel forward.
-        leftFrontDrive  = setupDriveMotor("lf", DcMotorEx.Direction.REVERSE);
-        rightFrontDrive = setupDriveMotor("rf", DcMotorEx.Direction.FORWARD);
-        leftBackDrive  = setupDriveMotor( "lb", DcMotorEx.Direction.REVERSE);
-        rightBackDrive = setupDriveMotor( "rb",DcMotorEx.Direction.FORWARD);
+        leftFrontDrive  = setupDriveMotor("lf", DcMotorEx.Direction.REVERSE);   //Control Hub 3
+        rightFrontDrive = setupDriveMotor("rf", DcMotorEx.Direction.FORWARD);  //Control Hub 2
+        leftBackDrive  = setupDriveMotor( "lb", DcMotorEx.Direction.REVERSE);    //Control Hub 1
+        rightBackDrive = setupDriveMotor( "rb",DcMotorEx.Direction.FORWARD);    //Control Hub 0
+
+        intake = setupDriveMotor( "intake",DcMotorEx.Direction.FORWARD);
 
         imu = myOpMode.hardwareMap.get(IMU.class, "imu");
-
-        //  Connect to the encoder channels using the name of that channel.
-        // driveEncoder = myOpMode.hardwareMap.get(DcMotor.class, "axial");
-        // strafeEncoder = myOpMode.hardwareMap.get(DcMotor.class, "lateral");
 
         // Set all hubs to use the AUTO Bulk Caching mode for faster encoder reads
         List<LynxModule> allHubs = myOpMode.hardwareMap.getAll(LynxModule.class);
@@ -125,12 +143,17 @@ public class HardwareAndFunctions {
 
         // Tell the software how the Control Hub is mounted on the robot to align the IMU XYZ axes correctly
         RevHubOrientationOnRobot orientationOnRobot =
-                new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                                             RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD);
+                new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                                             RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
+
+        initGoBildaPinpointOdometry();
 
         // zero out all the odometry readings.
         resetOdometry();
+
+        // reset the yaw each time, this makes sure robot doesn't go off in a wonky direction if you don't power off between runs
+        imu.resetYaw();
 
         // Set the desired telemetry state
         this.showTelemetry = showTelemetry;
@@ -151,32 +174,73 @@ public class HardwareAndFunctions {
         return aMotor;
     }
 
+    private void initGoBildaPinpointOdometry(){
+
+        // Initialize the hardware variables. Note that the strings used here must correspond
+        // to the names assigned during the robot configuration step on the DS or RC devices.
+
+        odo = myOpMode.hardwareMap.get(GoBildaPinpointDriver.class,"odo");
+
+        /*
+        Set the odometry pod positions relative to the point that the odometry computer tracks around.
+        The X pod offset refers to how far sideways from the tracking point the
+        X (forward) odometry pod is. Left of the center is a positive number,
+        right of center is a negative number. the Y pod offset refers to how far forwards from
+        the tracking point the Y (strafe) odometry pod is. forward of center is a positive number,
+        backwards is a negative number.
+         */
+        odo.setOffsets(0, 4.25,DistanceUnit.INCH); //these are tuned for 3110-0002-0001 Product Insight #1
+
+        /*
+        Set the kind of pods used by your robot. If you're using goBILDA odometry pods, select either
+        the goBILDA_SWINGARM_POD, or the goBILDA_4_BAR_POD.
+        If you're using another kind of odometry pod, uncomment setEncoderResolution and input the
+        number of ticks per mm of your odometry pod.
+         */
+        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        //odo.setEncoderResolution(13.26291192);
+
+        /*
+        Set the direction that each of the two odometry pods count. The X (forward) pod should
+        increase when you move the robot forward. And the Y (strafe) pod should increase when
+        you move the robot to the left.
+         */
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+    }
+
+
     /**
      * Read all input devices to determine the robot's motion
      * always return true so this can be used in "while" loop conditions
      * @return true
      */
     public boolean readSensors() {
-        // Get the latest position, which includes the x and y coordinates, plus the
-        // heading angle
 
-        driveDistance = (rawDriveOdometer - driveOdometerOffset);
-        strafeDistance = (rawStrafeOdometer - strafeOdometerOffset);
-
-        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-        AngularVelocity angularVelocity = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
-
-        rawHeading  = orientation.getYaw(AngleUnit.DEGREES);    // actual heading  -180 degrees to 180 degrees
-        heading     = rawHeading - headingOffset;
-        turnRate    = angularVelocity.zRotationRate;
-
-        if (showTelemetry) {
-            myOpMode.telemetry.addData("Odom Ax:Lat", "%5.2f %5.2f", rawDriveOdometer - driveOdometerOffset, rawStrafeOdometer - strafeOdometerOffset);
-            myOpMode.telemetry.addData("Dist Ax:Lat", "%5.2f %5.2f", driveDistance, strafeDistance);
-            myOpMode.telemetry.update();
+        if( odo == null ){
+            return true;
         }
 
+		/*
+			Request an update from the Pinpoint odometry computer. This checks almost all outputs
+			from the device in a single I2C read.
+		*/
+        odo.update();
 
+        // Get the latest position, which includes the x and y coordinates, plus the
+        // heading angle
+        Pose2D pos = odo.getPosition();
+
+        driveDistance =  pos.getX(DistanceUnit.INCH) * (INVERT_DRIVE_ODOMETRY ? -1 : 1);   // direction forward/back
+        strafeDistance = pos.getY(DistanceUnit.INCH) * (INVERT_STRAFE_ODOMETRY ? -1 : 1);   // direction left/right
+
+        heading = getLiveHeading();
+        turnRate = getAngularVelocityOtos();
+
+        if (showTelemetry) {
+            myOpMode.telemetry.addData("Position", "X: %5.2f, Y: %5.2f", driveDistance, strafeDistance);
+            myOpMode.telemetry.addData("Heading", "Degree: %5.2f, Turn rate: %5.2f", heading, turnRate);
+            myOpMode.telemetry.addData("Velocity", launcherSubsystem.getVelocity());
+          }
         return true;  // do this so this function can be included in the condition for a while loop to keep values fresh.
     }
 
@@ -306,6 +370,12 @@ public class HardwareAndFunctions {
         rightFrontDrive.setPower(rF);
         leftBackDrive.setPower(lB);
         rightBackDrive.setPower(rB);
+
+        if (showTelemetry) {
+            myOpMode.telemetry.addData("Axes D:S:Y", "%5.2f %5.2f %5.2f", drive, strafe, yaw);
+            myOpMode.telemetry.addData("Wheels lf:rf:lb:rb", "%5.2f %5.2f %5.2f %5.2f", lF, rF, lB, rB);
+            myOpMode.telemetry.update(); //  Assume this is the last thing done in the loop.
+        }
     }
 
     /**
@@ -315,11 +385,24 @@ public class HardwareAndFunctions {
         moveRobot(0,0,0);
     }
 
+    private double getAngularVelocityOtos(){
+        AngularVelocity angularVelocity = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
+        return angularVelocity.zRotationRate;
+    }
+
+    private double getLiveHeading(){
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        rawHeading  = orientation.getYaw(AngleUnit.DEGREES);
+        return rawHeading;
+    }
+
+
     /**
      * Set odometry counts and distances to zero.
      */
     public void resetOdometry() {
-//        myOtos.resetTracking();
+        //  TIM'S CODE
+        resetTracking();
 
         readSensors();
 
@@ -328,6 +411,11 @@ public class HardwareAndFunctions {
 
         strafeDistance = 0.0;
         strafeController.reset(0);
+    }
+
+    private void resetTracking(){
+        Pose2D pose2D = new Pose2D(DistanceUnit.INCH, 0.0, 0.0, AngleUnit.DEGREES,0.0 );
+        odo.setPosition( pose2D );
     }
 
     /**
@@ -343,96 +431,93 @@ public class HardwareAndFunctions {
     public double getHeading() {return heading;}
     public double getTurnRate() {return turnRate;}
 
+    public void autoCorrectForShooting(AprilTagWebcam aprilTagWebcam, int desiredTagId, double desiredDistance) {
+
+        double DISTANCE_TOLERANCE = 1.0;
+        double BEARING_TOLERANCE = .5;
+        boolean target_found = false;
+
+        double drive;
+        double turn;
+        double strafe;
+
+        double SPEED_GAIN = 0.02;
+        double STRAFE_GAIN = 0.015;
+        double TURN_GAIN = 0.01;
+
+        double MAX_AUTO_SPEED = 0.8;
+        double MAX_AUTO_STRAFE = 0.8;
+        double MAX_AUTO_TURN = 0.3;
+
+        // Use a timer to prevent getting stuck in an infinite loop.
+        ElapsedTime timeoutTimer = new ElapsedTime();
+        timeoutTimer.reset();
+        final double TIMEOUT_SECONDS = 3.0; // Give up after 3 seconds
+
+        // Start the loop. Exit if the opmode is stopped or if we time out.
+        while (myOpMode.opModeIsActive() && !target_found  && timeoutTimer.seconds() < TIMEOUT_SECONDS) {
+            // Get the LATEST detection data in every loop iteration.
+            aprilTagWebcam.update();
+            AprilTagDetection currentDetection = aprilTagWebcam.getTagBySpecificId(desiredTagId);
+
+            // Make sure the tag is still visible.
+            if (currentDetection != null) {
+                // Now, calculate errors using the NEW, updated data.
+                double rangeError = (currentDetection.ftcPose.range - desiredDistance);
+                double headingError = currentDetection.ftcPose.bearing;
+                double yawError = currentDetection.ftcPose.yaw;
+
+                // Check if we have arrived at the target.
+                if ((Math.abs(rangeError) <= DISTANCE_TOLERANCE) && (Math.abs(headingError) <= BEARING_TOLERANCE)) {
+                    stopRobot();
+                    target_found = true; // Set flag to exit the loop
+
+                } else {
+                    // Not there yet, so calculate motor powers.
+                    drive = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                    turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+                    strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+                    moveRobot(drive, strafe, turn); // Apply power
+                }
+            }
+        }
+        // Ensure the robot is stopped when the loop finishes for any reason.
+        stopRobot();
+    }
+
     /**
-     * Set the drive telemetry on or off
+     * Force the launcher and feeder to return to the IDLE state.
      */
-    public void showTelemetry(boolean show){
-        showTelemetry = show;
-    }
-    private void initializeSunSparkOpticalSensor() {
-        /* Look at OpticalSensor configureOtos() on how these numbers are created */
-        myOpMode.telemetry.addLine("Configuring OTOS...");
-        myOpMode.telemetry.update();
-
-        // Set the desired units for linear and angular measurements. Can be either
-        // meters or inches for linear, and radians or degrees for angular. If not
-        // set, the default is inches and degrees. Note that this setting is not
-        // persisted in the sensor, so you need to set at the start of all your
-        // OpModes if using the non-default value.
-        // myOtos.setLinearUnit(DistanceUnit.METER);
-        myOtos.setLinearUnit(DistanceUnit.INCH);
-        // myOtos.setAngularUnit(AnguleUnit.RADIANS);
-        myOtos.setAngularUnit(AngleUnit.DEGREES);
-
-        // Assuming you've mounted your sensor to a robot and it's not centered,
-        // you can specify the offset for the sensor relative to the center of the
-        // robot. The units default to inches and degrees, but if you want to use
-        // different units, specify them before setting the offset! Note that as of
-        // firmware version 1.0, these values will be lost after a power cycle, so
-        // you will need to set them each time you power up the sensor. For example, if
-        // the sensor is mounted 5 inches to the left (negative X) and 10 inches
-        // forward (positive Y) of the center of the robot, and mounted 90 degrees
-        // clockwise (negative rotation) from the robot's orientation, the offset
-        // would be {-5, 10, -90}. These can be any value, even the angle can be
-        // tweaked slightly to compensate for imperfect mounting (eg. 1.3 degrees).
-        SparkFunOTOS.Pose2D offset = new SparkFunOTOS.Pose2D(0, 7.0, 0);
-        myOtos.setOffset(offset);
-
-        // Here we can set the linear and angular scalars, which can compensate for
-        // scaling issues with the sensor measurements. Note that as of firmware
-        // version 1.0, these values will be lost after a power cycle, so you will
-        // need to set them each time you power up the sensor. They can be any value
-        // from 0.872 to 1.127 in increments of 0.001 (0.1%). It is recommended to
-        // first set both scalars to 1.0, then calibrate the angular scalar, then
-        // the linear scalar. To calibrate the angular scalar, spin the robot by
-        // multiple rotations (eg. 10) to get a precise error, then set the scalar
-        // to the inverse of the error. Remember that the angle wraps from -180 to
-        // 180 degrees, so for example, if after 10 rotations counterclockwise
-        // (positive rotation), the sensor reports -15 degrees, the required scalar
-        // would be 3600/3585 = 1.004. To calibrate the linear scalar, move the
-        // robot a known distance and measure the error; do this multiple times at
-        // multiple speeds to get an average, then set the linear scalar to the
-        // inverse of the error. For example, if you move the robot 100 inches and
-        // the sensor reports 103 inches, set the linear scalar to 100/103 = 0.971
-        myOtos.setLinearScalar(.9918);
-        myOtos.setAngularScalar(0.9928295643);
-
-        // The IMU on the OTOS includes a gyroscope and accelerometer, which could
-        // have an offset. Note that as of firmware version 1.0, the calibration
-        // will be lost after a power cycle; the OTOS performs a quick calibration
-        // when it powers up, but it is recommended to perform a more thorough
-        // calibration at the start of all your OpModes. Note that the sensor must
-        // be completely stationary and flat during calibration! When calling
-        // calibrateImu(), you can specify the number of samples to take and whether
-        // to wait until the calibration is complete. If no parameters are provided,
-        // it will take 255 samples and wait until done; each sample takes about
-        // 2.4ms, so about 612ms total
-        myOtos.calibrateImu();
-
-        // Reset the tracking algorithm - this resets the position to the origin,
-        // but can also be used to recover from some rare tracking errors
-        myOtos.resetTracking();
-
-        // After resetting the tracking, the OTOS will report that the robot is at
-        // the origin. If your robot does not start at the origin, or you have
-        // another source of location information (eg. vision odometry), you can set
-        // the OTOS location to match and it will continue to track from there.
-        SparkFunOTOS.Pose2D currentPosition = new SparkFunOTOS.Pose2D(0, 0, 0);
-        myOtos.setPosition(currentPosition);
-
-        // Get the hardware and firmware version
-        SparkFunOTOS.Version hwVersion = new SparkFunOTOS.Version();
-        SparkFunOTOS.Version fwVersion = new SparkFunOTOS.Version();
-        myOtos.getVersionInfo(hwVersion, fwVersion);
-
-        myOpMode.telemetry.addLine("OTOS configured! Press start to get position data!");
-        myOpMode.telemetry.addLine();
-        myOpMode.telemetry.addLine(String.format("OTOS Hardware Version: v%d.%d", hwVersion.major, hwVersion.minor));
-        myOpMode.telemetry.addLine(String.format("OTOS Firmware Version: v%d.%d", fwVersion.major, fwVersion.minor));
-        myOpMode.telemetry.update();
-
+    public void resetFeederTimer() {
+        launcherSubsystem.resetFeederTimer();
     }
 
+    /**
+     * Sets the velocity of our launcher wheel to the desired speed for shooting
+     * @param velocity 0 to Max speed Constant for the position we shoot from
+     */
+    public void setLauncherVelocity(double velocity){
+        launcherSubsystem.setLauncherVelocity(velocity);
+    }
+
+    public void stopLauncher(){
+        launcherSubsystem.stopLauncher();
+    }
+
+    /**
+     * Used to launch and queue up balls
+     */
+    public void launch() {
+        launcherSubsystem.launch();
+    }
+
+    public int getLaunchCount() {
+        return launcherSubsystem.getLaunchCount();
+    }
+
+    public void setLaunchCountZero() {
+        launcherSubsystem.setLaunchCountZero();
+    }
 }
 
 //****************************************************************************************************
