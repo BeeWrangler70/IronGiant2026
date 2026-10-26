@@ -134,8 +134,8 @@ public class HardwareAndFunctions {
 
         // Tell the software how the Control Hub is mounted on the robot to align the IMU XYZ axes correctly
         RevHubOrientationOnRobot orientationOnRobot =
-                new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                                             RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
+                new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                                             RevHubOrientationOnRobot.UsbFacingDirection.LEFT);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         initGoBildaPinpointOdometry();
@@ -180,7 +180,7 @@ public class HardwareAndFunctions {
         the tracking point the Y (strafe) odometry pod is. forward of center is a positive number,
         backwards is a negative number.
          */
-        odo.setOffsets(0, 4.25,DistanceUnit.INCH); //these are tuned for 3110-0002-0001 Product Insight #1
+        odo.setOffsets(6.25, -7.75,DistanceUnit.INCH); //these are tuned for 3110-0002-0001 Product Insight #1
 
         /*
         Set the kind of pods used by your robot. If you're using goBILDA odometry pods, select either
