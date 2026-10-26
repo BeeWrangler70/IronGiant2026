@@ -137,6 +137,8 @@ public class TeleOp extends LinearOpMode {
             telemetry.addData("Target Velocity", "%.0f Ticks/Sec", launcher.launcherTargetVelocity);
             telemetry.addData("Current Velocity", "%.0f Ticks/Sec", launcher.getVelocity());
 
+            telemetry.addData("Left Sweeper", robot.intakeSubsystem.leftSweeper != null ? robot.intakeSubsystem.leftSweeper.getPower() : "NULL");
+            telemetry.addData("Right Sweeper", robot.intakeSubsystem.rightSweeper != null ? robot.intakeSubsystem.rightSweeper.getPower() : "NULL");
             telemetry.update();
         }
     }
