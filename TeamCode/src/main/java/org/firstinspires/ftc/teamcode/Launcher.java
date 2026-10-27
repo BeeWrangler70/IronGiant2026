@@ -28,6 +28,8 @@ public class Launcher {
     public DcMotorEx launcherMotor;
     public CRServo launcherFeeder;
 
+    private boolean feederActive = false;
+
     // State Machine
     public enum LaunchState {
         IDLE,
@@ -107,6 +109,39 @@ public class Launcher {
         if (launcherFeeder != null) {
             launcherFeeder.setPower(power);
         }
+        feederActive = (power != 0.0);
+    }
+
+    /**
+     * Turns on the launcher feeder servo at default power.
+     */
+    public void turnOnFeeder() {
+        setFeederPower(FEEDER_POWER);
+    }
+
+    /**
+     * Stops the launcher feeder servo.
+     */
+    public void stopFeeder() {
+        setFeederPower(STOP_SPEED);
+    }
+
+    /**
+     * Toggles the launcher feeder servo ON and OFF.
+     */
+    public void toggleFeeder() {
+        if (feederActive) {
+            stopFeeder();
+        } else {
+            turnOnFeeder();
+        }
+    }
+
+    /**
+     * Returns whether the launcher feeder is currently active.
+     */
+    public boolean isFeederActive() {
+        return feederActive;
     }
 
     /**
@@ -115,7 +150,7 @@ public class Launcher {
     public void stopLauncher() {
         this.launcherTargetVelocity = STOP_SPEED;
         if (launcherMotor != null) launcherMotor.setPower(STOP_SPEED);
-        if (launcherFeeder != null) launcherFeeder.setPower(STOP_SPEED);
+        stopFeeder();
         launchState = LaunchState.IDLE;
     }
 
@@ -146,22 +181,14 @@ public class Launcher {
                 break;
 
             case LAUNCH:
-//                if (firstLaunch || (launchTimer.seconds() >= LAUNCH_DELAY_SECONDS)) {
-//                    firstLaunch = false;
-//                    if (launcherFeeder != null) {
-                        launcherFeeder.setPower(FEEDER_POWER);
-//                    }
-//                    feederTimer.reset();
-                    launchState = LaunchState.LAUNCHING;
-//                }
+                turnOnFeeder();
+                launchState = LaunchState.LAUNCHING;
                 break;
 
             case LAUNCHING:
                 if (feederTimer.seconds() >= FEED_TIME_SECONDS) {
                     launchCount++;
-                    if (launcherFeeder != null) {
-                        launcherFeeder.setPower(STOP_SPEED);
-                    }
+                    stopFeeder();
                     launchState = LaunchState.IDLE;
                 }
                 break;

@@ -13,7 +13,9 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -493,6 +495,18 @@ public class HardwareAndFunctions {
 
     public void stopLauncher(){
         launcherSubsystem.stopLauncher();
+    }
+
+    public void turnOnFeeder() {
+        launcherSubsystem.turnOnFeeder();
+    }
+
+    public void stopFeeder() {
+        launcherSubsystem.stopFeeder();
+    }
+
+    public void toggleFeeder() {
+        launcherSubsystem.toggleFeeder();
     }
 
     /**

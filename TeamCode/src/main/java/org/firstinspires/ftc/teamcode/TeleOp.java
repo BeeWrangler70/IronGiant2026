@@ -18,7 +18,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  *   <li>A Button: Toggle Launcher Flywheel ON / OFF</li>
  *   <li>B Button: Stop Flywheel immediately</li>
  *   <li>X / Y Buttons: Set Flywheel target speeds (Close line vs 3-Point line)</li>
- *   <li>Right Bumper (Pressed Once): Trigger single launch sequence</li>
+ *   <li>Right Bumper / Button: Toggle Launcher Feeder ON / OFF</li>
  * </ul>
  */
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp")
@@ -119,6 +119,11 @@ public class TeleOp extends LinearOpMode {
                 robot.toggleIntake();
             }
 
+            // 3. Toggle Launcher Feeder ON / OFF with Right Bumper / Button single press
+            if (operator.rightBumperOnce()) {
+                launcher.toggleFeeder();
+            }
+
             // ==========================================
             // --- TELEMETRY / DIAGNOSTICS ---
             // ==========================================
@@ -133,6 +138,7 @@ public class TeleOp extends LinearOpMode {
 
             telemetry.addData("--- Operator (Gamepad 2) ---", "");
             telemetry.addData("Launcher Status", launcherActive ? "RUNNING" : "STOPPED");
+            telemetry.addData("Feeder Status", launcher.isFeederActive() ? "RUNNING" : "STOPPED");
             telemetry.addData("Intake Status", robot.intakeSubsystem.isIntakeActive() ? "RUNNING" : "STOPPED");
             telemetry.addData("Target Velocity", "%.0f Ticks/Sec", launcher.launcherTargetVelocity);
             telemetry.addData("Current Velocity", "%.0f Ticks/Sec", launcher.getVelocity());
