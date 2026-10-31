@@ -16,6 +16,7 @@ public class Launcher {
 
     // Timing and Speed Constants
     public static double FEED_TIME_SECONDS = 0.5;     // Time (in seconds) to rotate feeder servo ~1/2 turn.
+    public static double FEEDER_QUARTER_TURN_TIME_SECONDS = 0.25; // Time (in seconds) to rotate feeder servo ~1/4 turn.
     public static double LAUNCH_DELAY_SECONDS = 0.5;  // Delay before feeding ball to ensure flywheel is stabilized at target speed.
     public static final double STOP_SPEED = 0.0;
     public static final double FEEDER_POWER = 1.0;
@@ -29,6 +30,8 @@ public class Launcher {
     public CRServo launcherFeeder;
 
     private boolean feederActive = false;
+    private boolean quarterTurnActive = false;
+    private final ElapsedTime quarterTurnTimer = new ElapsedTime();
 
     // State Machine
     public enum LaunchState {
@@ -70,6 +73,14 @@ public class Launcher {
      */
     public void update() {
         if (launcherMotor == null) return;
+
+        // Handle quarter-turn timer
+        if (quarterTurnActive) {
+            if (quarterTurnTimer.seconds() >= FEEDER_QUARTER_TURN_TIME_SECONDS) {
+                stopFeeder();
+                quarterTurnActive = false;
+            }
+        }
 
         if (launcherTargetVelocity <= 0) {
             launcherMotor.setPower(STOP_SPEED);
@@ -138,10 +149,21 @@ public class Launcher {
     }
 
     /**
+     * Spins the launcher feeder servo a quarter turn non-blockingly.
+     */
+    public void feedQuarterTurn() {
+        if (!quarterTurnActive && launchState == LaunchState.IDLE) {
+            quarterTurnActive = true;
+            quarterTurnTimer.reset();
+            setFeederPower(FEEDER_POWER);
+        }
+    }
+
+    /**
      * Returns whether the launcher feeder is currently active.
      */
     public boolean isFeederActive() {
-        return feederActive;
+        return feederActive || quarterTurnActive;
     }
 
     /**
@@ -151,6 +173,7 @@ public class Launcher {
         this.launcherTargetVelocity = STOP_SPEED;
         if (launcherMotor != null) launcherMotor.setPower(STOP_SPEED);
         stopFeeder();
+        quarterTurnActive = false;
         launchState = LaunchState.IDLE;
     }
 

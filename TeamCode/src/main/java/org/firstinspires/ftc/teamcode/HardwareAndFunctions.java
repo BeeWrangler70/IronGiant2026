@@ -509,6 +509,10 @@ public class HardwareAndFunctions {
         launcherSubsystem.toggleFeeder();
     }
 
+    public void feedQuarterTurn() {
+        launcherSubsystem.feedQuarterTurn();
+    }
+
     /**
      * Used to launch and queue up balls
      */

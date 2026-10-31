@@ -18,7 +18,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  *   <li>A Button: Toggle Launcher Flywheel ON / OFF</li>
  *   <li>B Button: Stop Flywheel immediately</li>
  *   <li>X / Y Buttons: Set Flywheel target speeds (Close line vs 3-Point line)</li>
- *   <li>Right Bumper / Button: Toggle Launcher Feeder ON / OFF</li>
+ *   <li>Right Bumper: Toggle Launcher Feeder ON / OFF</li>
+ *   <li>Left Bumper: Spin Launcher Feeder a Quarter Turn (~90°)</li>
  * </ul>
  */
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp")
@@ -119,9 +120,14 @@ public class TeleOp extends LinearOpMode {
                 robot.toggleIntake();
             }
 
-            // 3. Toggle Launcher Feeder ON / OFF with Right Bumper / Button single press
+            // 3. Toggle Launcher Feeder ON / OFF with Right Bumper single press
             if (operator.rightBumperOnce()) {
                 launcher.toggleFeeder();
+            }
+
+            // 4. Spin launcher feeder a quarter turn with Left Bumper single press
+            if (operator.leftBumperOnce()) {
+                robot.feedQuarterTurn();
             }
 
             // ==========================================
