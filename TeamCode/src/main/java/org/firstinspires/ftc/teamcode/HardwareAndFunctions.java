@@ -12,6 +12,7 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -75,7 +76,9 @@ public class HardwareAndFunctions {
     private DcMotorEx leftBackDrive;      //  control the left back drive wheel
     private DcMotorEx rightBackDrive;     //  control the right back drive wheel
 
-    private LinearOpMode myOpMode;
+    private OpMode myOpMode;
+    private LinearOpMode linearOpMode;
+    private boolean isLinear = false;
     public IMU imu;
 
     GoBildaPinpointDriver odo; // Declare OpMode member for the Odometry Computer
@@ -93,9 +96,40 @@ public class HardwareAndFunctions {
     public List<AprilTagDetection> detectedTags = new ArrayList<>();
     public AprilTagWebcam aprilTagWebcam = new AprilTagWebcam();
 
-    // Robot Constructor
+    // Robot Constructors
     public HardwareAndFunctions(LinearOpMode opmode) {
-        myOpMode = opmode;
+        this.myOpMode = opmode;
+        this.linearOpMode = opmode;
+        this.isLinear = true;
+    }
+
+    public HardwareAndFunctions(OpMode opmode) {
+        this.myOpMode = opmode;
+        if (opmode instanceof LinearOpMode) {
+            this.linearOpMode = (LinearOpMode) opmode;
+            this.isLinear = true;
+        } else {
+            this.isLinear = false;
+        }
+    }
+
+    private boolean opModeIsActive() {
+        if (isLinear && linearOpMode != null) {
+            return linearOpMode.opModeIsActive();
+        }
+        return true;
+    }
+
+    private void sleep(long milliseconds) {
+        if (isLinear && linearOpMode != null) {
+            linearOpMode.sleep(milliseconds);
+        } else {
+            try {
+                Thread.sleep(milliseconds);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     /**
@@ -253,7 +287,7 @@ public class HardwareAndFunctions {
         yawController.reset();                          // Maintain last turn heading
         holdTimer.reset();
 
-        while (myOpMode.opModeIsActive() && readSensors()){
+        while (opModeIsActive() && readSensors()){
 
             // implement desired axis powers
             moveRobot(driveController.getOutput(driveDistance), strafeController.getOutput(strafeDistance), yawController.getOutput(heading));
@@ -266,7 +300,7 @@ public class HardwareAndFunctions {
             } else {
                 holdTimer.reset();
             }
-            myOpMode.sleep(10);
+            sleep(10);
         }
         stopRobot();
     }
@@ -285,7 +319,7 @@ public class HardwareAndFunctions {
         yawController.reset();                          // Maintain last turn angle
         holdTimer.reset();
 
-        while (myOpMode.opModeIsActive() && readSensors()){
+        while (opModeIsActive() && readSensors()){
 
             // implement desired axis powers
             moveRobot(driveController.getOutput(driveDistance), strafeController.getOutput(strafeDistance), yawController.getOutput(heading));
@@ -298,7 +332,7 @@ public class HardwareAndFunctions {
             } else {
                 holdTimer.reset();
             }
-            myOpMode.sleep(10);
+            sleep(10);
         }
         stopRobot();
     }
@@ -312,7 +346,7 @@ public class HardwareAndFunctions {
     public void turnTo(double headingDeg, double power, double holdTime) {
 
         yawController.reset(headingDeg, power);
-        while (myOpMode.opModeIsActive() && readSensors()) {
+        while (opModeIsActive() && readSensors()) {
 
             // implement desired axis powers
             moveRobot(0, 0, yawController.getOutput(heading));
@@ -325,7 +359,7 @@ public class HardwareAndFunctions {
             } else {
                 holdTimer.reset();
             }
-            myOpMode.sleep(10);
+            sleep(10);
         }
         stopRobot();
     }
@@ -448,7 +482,7 @@ public class HardwareAndFunctions {
         final double TIMEOUT_SECONDS = 3.0; // Give up after 3 seconds
 
         // Start the loop. Exit if the opmode is stopped or if we time out.
-        while (myOpMode.opModeIsActive() && !target_found  && timeoutTimer.seconds() < TIMEOUT_SECONDS) {
+        while (opModeIsActive() && !target_found  && timeoutTimer.seconds() < TIMEOUT_SECONDS) {
             // Get the LATEST detection data in every loop iteration.
             aprilTagWebcam.update();
             AprilTagDetection currentDetection = aprilTagWebcam.getTagBySpecificId(desiredTagId);
