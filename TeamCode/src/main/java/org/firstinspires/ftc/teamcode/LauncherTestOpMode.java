@@ -1,57 +1,47 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 /**
- * Standalone OpMode for testing the launcher motor with FTC Dashboard support.
+ * Standalone OpMode for testing the launcher motor with gamepad controls.
  * <p>
- * Features:
+ * Controls (Gamepad 1):
  * <ul>
- *   <li>Configurable target velocity starting at 1250 ticks/sec (editable live in FTC Dashboard).</li>
- *   <li>Sends telemetry to both Driver Station and FTC Dashboard.</li>
- *   <li>Gamepad controls to start/stop the launcher.</li>
- *   <li>Annotated with @Disabled so you can easily enable/disable it in the Driver Station.</li>
- *   <li>http://192.168.43.1:8080/dash to access the dashboard</li>
+ *   <li>A Button: Start Launcher</li>
+ *   <li>B Button: Stop Launcher</li>
+ *   <li>D-pad Up: Increase Target Velocity (+50 Ticks/Sec)</li>
+ *   <li>D-pad Down: Decrease Target Velocity (-50 Ticks/Sec)</li>
  * </ul>
  */
-@Config
 @TeleOp(name = "Launcher Test OpMode", group = "Test")
 //@Disabled
 public class LauncherTestOpMode extends LinearOpMode {
 
-    // FTC Dashboard configurable static variable starting at 1250
-    public static double targetVelocity = 1250.0;
-    public static double pGain = 5.0;
-    public static double iGain = 0.0;
-    public static double dGain = 0.0;
-    public static double fGain = 12.0;
+    private static final double VELOCITY_STEP = 50.0;
+    private static final double MIN_VELOCITY = 0.0;
+    private static final double MAX_VELOCITY = 3000.0;
 
+    private double targetVelocity = 1250.0; // Starts at 1250
     private DcMotorEx launcher;
     private boolean launcherRunning = false;
 
     @Override
     public void runOpMode() {
-        // Multi-telemetry for Driver Station + FTC Dashboard
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        GamepadController driver = new GamepadController(gamepad1);
 
-        // Initialize hardware
         telemetry.addData("Status", "Initializing Launcher Test...");
         telemetry.update();
 
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
-        launcher.setDirection(DcMotorEx.Direction.REVERSE);
+        launcher.setDirection(DcMotor.Direction.REVERSE);
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(pGain, iGain, dGain, fGain));
+        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(5.0, 0, 0, 12.0));
 
         telemetry.addData("Status", "Ready! Press Play.");
         telemetry.update();
@@ -59,30 +49,35 @@ public class LauncherTestOpMode extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
+            driver.update();
 
-            // Gamepad controls: A to start launcher, B to stop launcher
-            if (gamepad1.a) {
+            // 1. Start / Stop controls
+            if (driver.aOnce()) {
                 launcherRunning = true;
-            } else if (gamepad1.b) {
+            } else if (driver.bOnce()) {
                 launcherRunning = false;
             }
 
-            // Update PIDF coefficients if modified in FTC Dashboard
-            launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(pGain, iGain, dGain, fGain));
+            // 2. Adjust target velocity on the fly using D-pad Up and D-pad Down
+            if (driver.dpadUpOnce()) {
+                targetVelocity = Math.min(targetVelocity + VELOCITY_STEP, MAX_VELOCITY);
+            } else if (driver.dpadDownOnce()) {
+                targetVelocity = Math.max(targetVelocity - VELOCITY_STEP, MIN_VELOCITY);
+            }
 
+            // 3. Apply power/velocity to motor
             if (launcherRunning) {
                 launcher.setVelocity(targetVelocity);
             } else {
                 launcher.setPower(0.0);
             }
 
-            // Telemetry reporting to Driver Station and FTC Dashboard
+            // 4. Telemetry reporting
             telemetry.addData("Launcher State", launcherRunning ? "RUNNING" : "STOPPED");
             telemetry.addData("Target Velocity", "%.1f Ticks/Sec", targetVelocity);
             telemetry.addData("Current Velocity", "%.1f Ticks/Sec", launcher.getVelocity());
             telemetry.addData("Motor Power", "%.2f", launcher.getPower());
-            telemetry.addData("PIDF", "P:%.1f I:%.1f D:%.1f F:%.1f", pGain, iGain, dGain, fGain);
-            telemetry.addData("Controls", "Gamepad A: Start | Gamepad B: Stop");
+            telemetry.addData("Controls", "A: Start | B: Stop | D-Pad Up/Down: Adjust Velocity (±50)");
             telemetry.update();
         }
 
