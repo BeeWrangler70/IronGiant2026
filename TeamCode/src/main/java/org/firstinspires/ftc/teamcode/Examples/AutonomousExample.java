@@ -1,7 +1,10 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Examples;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.teamcode.HardwareAndFunctions;
+import org.firstinspires.ftc.teamcode.Launcher;
 
 /**
  * Autonomous OpMode (Linear OpMode) using HardwareAndFunctions / Proportional Controllers
@@ -22,11 +25,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 @Autonomous(name = "Basic Autonomous", group = "Autonomous")
 public class AutonomousExample extends LinearOpMode {
 
-    private HardwareAndFunctions robot;
-
     @Override
     public void runOpMode() {
-        robot = new HardwareAndFunctions(this);
+        HardwareAndFunctions robot = new HardwareAndFunctions(this);
         telemetry.addData("Status", "Initializing Linear Autonomous...");
         telemetry.update();
 

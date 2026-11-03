@@ -1,11 +1,12 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TestingMethods;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+
+import org.firstinspires.ftc.teamcode.GamepadController;
 
 /**
  * Standalone OpMode (Iterative OpMode) for testing the launcher motor with gamepad controls.
@@ -18,8 +19,8 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
  *   <li>D-pad Down: Decrease Target Velocity (-50 Ticks/Sec)</li>
  * </ul>
  */
-@TeleOp(name = "Launcher Test OpMode", group = "Test")
-public class LauncherTestOpMode extends OpMode {
+@TeleOp(name = "Launcher Test OpMode - Dash", group = "Test")
+public class LauncherTestOpModewFTCDashboard extends OpMode {
 
     private static final double VELOCITY_STEP = 50.0;
     private static final double MIN_VELOCITY = 0.0;
