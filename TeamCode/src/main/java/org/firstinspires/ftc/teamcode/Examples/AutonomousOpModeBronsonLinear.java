@@ -1,7 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Examples;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.teamcode.HardwareAndFunctions;
+import org.firstinspires.ftc.teamcode.Launcher;
 
 /**
  * Autonomous OpMode (Linear OpMode) implementing Bronson's movement sequence
@@ -22,6 +26,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
  *   <li>Stop</li>
  * </ul>
  */
+@Disabled
 @Autonomous(name = "Bronson Linear Autonomous", group = "Autonomous")
 public class AutonomousOpModeBronsonLinear extends LinearOpMode {
 

@@ -35,16 +35,9 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
         WAIT_FOR_FEED,
         STOP_LAUNCHER,
         DRIVE_FORWARD_1,
-        STRAFE_LEFT_10,
-        TURN_LEFT_90,
-        TURN_ON_INTAKE_AND_DRIVE_2,
-        TURN_RIGHT_180,
         DONE,
-
-        DRIVE_FORWARD_3,
         STRAFE_LEFT_2,
         DRIVE_FORWARD_1FT_4INCHES,
-
         DRIVE_BACK_1,
         STRAFE_RIGHT_8,
         STRAFE_LEFT_3,
@@ -116,43 +109,21 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
                 robot.drive(-12,.8,.25);  // drive forward 3 inches with 80% power
                 currentState = AutoState.STRAFE_LEFT_2;
                 break;
+
             case STRAFE_LEFT_2:
                 robot.strafe( -24, 0.60,0.15); // Strafe left 10 inches
                 currentState = AutoState.DRIVE_FORWARD_7_5;;
                 break;
 
-
-                case DRIVE_FORWARD_7_5:
+            case DRIVE_FORWARD_7_5:
                 robot.drive(-72,.8,.25);  // drive forward 3 inches with 80% power
                 currentState = AutoState.STRAFE_LEFT_3;
                 break;
 
-                case STRAFE_LEFT_3:
+            case STRAFE_LEFT_3:
                 robot.strafe( -15, 0.60,0.15); // Strafe left 10 inches
-                currentState = AutoState.DONE;;
+                currentState = AutoState.DONE;
                 break;
-                case DRIVE_FORWARD_1FT_4INCHES:
-                robot.drive(16,.8,.25);  // drive forward 3 inches with 80% power
-                currentState = AutoState.DRIVE_BACK_1;
-                break;
-                case DRIVE_BACK_1:
-                    robot.drive(-12,.8,.25);  // drive forward 3 inches with 80% power
-                currentState = AutoState.STRAFE_RIGHT_8;
-                break;
-//                case STRAFE_RIGHT_8:
-//                    robot.strafe( 96, 0.60,0.15); // Strafe left 10 inches
-//                currentState = AutoState.DRIVE_FORWARD_9;
-//                break;
-//                case DRIVE_FORWARD_9:
-//                    robot.drive(9,.8,.25);  // drive forward 3 inches with 80% power
-//                currentState = AutoState.DONE;
-//                break;
-
-
-
-
-
-
 
             case DONE:
                 robot.stopIntake();
