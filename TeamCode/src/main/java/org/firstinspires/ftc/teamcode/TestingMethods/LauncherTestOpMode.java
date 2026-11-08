@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TestingMethods;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+
+import org.firstinspires.ftc.teamcode.GamepadController;
 
 /**
  * Standalone OpMode (Iterative OpMode) for testing the launcher motor with gamepad controls.
@@ -25,7 +27,7 @@ public class LauncherTestOpMode extends OpMode {
     private static final double MIN_VELOCITY = 0.0;
     private static final double MAX_VELOCITY = 3000.0;
 
-    private double targetVelocity = 1250.0; // Starts at 1250
+    private double targetVelocity = 1400.0; // Starts at 1250
     private DcMotorEx launcher;
     private boolean launcherRunning = false;
     private GamepadController driver;
@@ -38,7 +40,7 @@ public class LauncherTestOpMode extends OpMode {
         telemetry.update();
 
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
-        launcher.setDirection(DcMotor.Direction.REVERSE);
+        launcher.setDirection(DcMotor.Direction.FORWARD);
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(5.0, 0, 0, 12.0));

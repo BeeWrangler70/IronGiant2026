@@ -22,7 +22,7 @@ public class Launcher {
     public static final double FEEDER_POWER = 1.0;
 
     // Target Velocities in Encoder Ticks per Second
-    public static double LAUNCHER_TARGET_VELOCITY = 1250;             // Close Shot (~1280 RPM)
+    public static double LAUNCHER_TARGET_VELOCITY = 1400;             // Close Shot (~1280 RPM)
     public double launcherTargetVelocity = LAUNCHER_TARGET_VELOCITY;
 
     // Hardware Interface Objects

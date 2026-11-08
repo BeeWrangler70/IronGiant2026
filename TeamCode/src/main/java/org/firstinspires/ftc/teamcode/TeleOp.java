@@ -22,7 +22,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
  *   <li>Left Bumper: Spin Launcher Feeder a Quarter Turn (~90°)</li>
  * </ul>
  */
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp - Robot Centric")
 public class TeleOp extends OpMode {
 
     // Drive Speed Modifiers
@@ -141,6 +141,19 @@ public class TeleOp extends OpMode {
         // 4. Spin launcher feeder a quarter turn with Left Bumper single press
         if (operator.leftBumperOnce()) {
             robot.feedQuarterTurn();
+        }
+
+        // 5. Adjust Launcher Target Velocity with D-Pad Up / Down (by +/- 50 ticks/sec)
+        if (operator.dpadUpOnce()) {
+            launcher.launcherTargetVelocity += 50;
+            if (launcherActive) {
+                launcher.setLauncherVelocity(launcher.launcherTargetVelocity);
+            }
+        } else if (operator.dpadDownOnce()) {
+            launcher.launcherTargetVelocity = Math.max(0, launcher.launcherTargetVelocity - 50);
+            if (launcherActive) {
+                launcher.setLauncherVelocity(launcher.launcherTargetVelocity);
+            }
         }
 
 

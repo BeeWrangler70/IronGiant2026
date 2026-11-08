@@ -20,8 +20,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  *   <li>Stop</li>
  * </ul>
  */
-@Autonomous(name = "Basic Autonomous", group = "Autonomous")
-public class AutonomousOpMode extends OpMode {
+@Autonomous(name = "Logan Basic Autonomous", group = "Autonomous")
+public class AutonomousOpModeLoganBasic extends OpMode {
 
     private HardwareAndFunctions robot;
     private Launcher launcher;
@@ -34,12 +34,21 @@ public class AutonomousOpMode extends OpMode {
         START_FEEDER,
         WAIT_FOR_FEED,
         STOP_LAUNCHER,
-        DRIVE_FORWARD_3,
-        STRAFE_LEFT_10,
-        TURN_LEFT_90,
-        TURN_ON_INTAKE_AND_DRIVE_2,
-        TURN_RIGHT_180,
-        DONE
+        DRIVE_FORWARD_1,
+        DONE,
+        STRAFE_LEFT_2,
+        DRIVE_FORWARD_1FT_4INCHES,
+        DRIVE_BACK_1,
+        STRAFE_RIGHT_8,
+        STRAFE_LEFT_3,
+        DRIVE_FORWARD_7_5,
+        TURN_90_LEFT,
+        DRIVE_FORWARD_24,
+        DRIVE_FORWARD_1FT_6INCHES,
+        STRAFE_LEFT_8,
+        DRIVE_FORWARD_9
+
+
     }
 
     private AutoState currentState = AutoState.SPIN_UP_LAUNCHER;
@@ -98,34 +107,36 @@ public class AutonomousOpMode extends OpMode {
             case STOP_LAUNCHER:
                 robot.stopFeeder();
                 robot.stopLauncher();
-                currentState = AutoState.DRIVE_FORWARD_3;
+                currentState = AutoState.TURN_90_LEFT;
                 break;
 
-            case DRIVE_FORWARD_3:
-                robot.drive(3,.8,.25);  // drive forward 3 inches with 80% power
-                currentState = AutoState.STRAFE_LEFT_10;
+            case TURN_90_LEFT:
+                robot.turnTo(-90, 0.8, 0.25);
+                currentState = AutoState.DRIVE_FORWARD_24;
                 break;
 
-            case STRAFE_LEFT_10:
-                robot.strafe( 10, 0.60,0.15); // Strafe left 10 inches
-                currentState = AutoState.TURN_LEFT_90;
+            case DRIVE_FORWARD_24:
+                robot.drive(24,0.9,0.25);
+                currentState = AutoState.DRIVE_FORWARD_1FT_6INCHES;;
                 break;
 
-            case TURN_LEFT_90:
-                robot.turnTo(90, 0.50, 0.25);  // Turn 90 degrees left
-                currentState = AutoState.TURN_ON_INTAKE_AND_DRIVE_2;
+            case DRIVE_FORWARD_1FT_6INCHES:_6:
+                robot.drive(18,.2,.25);  // drive forward 3 inches with 80% power
+                currentState = AutoState.DRIVE_BACK_1;
                 break;
 
-            case TURN_ON_INTAKE_AND_DRIVE_2:
-                robot.turnOnIntake();
-                robot.drive(2,.8,.25);  // drive forward 2 inches with 80% power
-                currentState = AutoState.TURN_RIGHT_180;
+            case DRIVE_BACK_1:
+                robot.strafe( -12, 0.90,0.15); // Strafe left 10 inches
+                currentState = AutoState.STRAFE_LEFT_8;
                 break;
-
-            case TURN_RIGHT_180:
-                robot.turnTo(270, 0.50, 0.25);  // Turn 180 degrees right
-                currentState = AutoState.DONE;
-                break;
+                case STRAFE_LEFT_8:
+                    robot.strafe( -96, 0.90,0.15); // Strafe left 10 inches
+                    currentState = AutoState.DRIVE_FORWARD_9;
+                    break;
+                    case DRIVE_FORWARD_9:
+                        robot.drive( 9, 0.90,0.15); // Strafe left 10 inches
+                       currentState = AutoState.DONE;
+                       break;
 
             case DONE:
                 robot.stopIntake();
