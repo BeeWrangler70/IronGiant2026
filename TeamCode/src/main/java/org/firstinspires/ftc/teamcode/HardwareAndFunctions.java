@@ -547,6 +547,14 @@ public class HardwareAndFunctions {
         launcherSubsystem.feedQuarterTurn();
     }
 
+    public void feedQuarterTurnBackwards() {
+        launcherSubsystem.feedQuarterTurnBackwards();
+    }
+
+    public void feedQuarterTurnBack() {
+        launcherSubsystem.feedQuarterTurnBackwards();
+    }
+
     /**
      * Used to launch and queue up balls
      */

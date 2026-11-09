@@ -18,9 +18,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  * Operator Controls (Gamepad 2):
  * <ul>
  *   <li>A Button: Toggle Launcher Flywheel ON / OFF</li>
+ *   <li>B Button: Toggle Launcher Feeder Continuous ON / OFF</li>
  *   <li>X Button: Toggle Intake and Sweepers ON / OFF</li>
- *   <li>Right Bumper: Toggle Launcher Feeder ON / OFF</li>
- *   <li>Left Bumper: Spin Launcher Feeder a Quarter Turn (~90°)</li>
+ *   <li>Right Bumper: Spin Launcher Feeder a Quarter Turn Forward (~90°)</li>
+ *   <li>Left Bumper: Spin Launcher Feeder a Quarter Turn Backwards (~90°)</li>
  *   <li>D-Pad Up / Down: Adjust Launcher Target Velocity (+/- 50 Ticks/Sec)</li>
  * </ul>
  */
@@ -144,19 +145,24 @@ public class TelopFieldCentric extends OpMode {
             }
         }
 
-        // 2. Toggle Intake and Sweepers ON / OFF with 'X' Button single press
+        // 2. Toggle Launcher Feeder Continuous ON / OFF with 'B' Button single press
+        if (operator.bOnce()) {
+            launcher.toggleFeeder();
+        }
+
+        // 3. Toggle Intake and Sweepers ON / OFF with 'X' Button single press
         if (operator.xOnce()) {
             robot.toggleIntake();
         }
 
-        // 3. Toggle Launcher Feeder ON / OFF with Right Bumper single press
+        // 4. Spin launcher feeder a quarter turn forward with Right Bumper single press
         if (operator.rightBumperOnce()) {
-            launcher.toggleFeeder();
+            robot.feedQuarterTurn();
         }
 
-        // 4. Spin launcher feeder a quarter turn with Left Bumper single press
+        // 5. Spin launcher feeder a quarter turn backwards with Left Bumper single press
         if (operator.leftBumperOnce()) {
-            robot.feedQuarterTurn();
+            robot.feedQuarterTurnBackwards();
         }
 
         // 5. Adjust Launcher Target Velocity with D-Pad Up / Down (by +/- 50 ticks/sec)

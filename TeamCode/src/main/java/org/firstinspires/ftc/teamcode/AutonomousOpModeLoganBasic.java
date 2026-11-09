@@ -46,7 +46,8 @@ public class AutonomousOpModeLoganBasic extends OpMode {
         DRIVE_FORWARD_24,
         DRIVE_FORWARD_1FT_6INCHES,
         STRAFE_LEFT_8,
-        DRIVE_FORWARD_9
+        DRIVE_FORWARD_9,
+        STRAFE_LEFT_7
 
 
     }
@@ -87,7 +88,8 @@ public class AutonomousOpModeLoganBasic extends OpMode {
                 break;
 
             case WAIT_FOR_SPIN_UP:
-                if (stateTimer.seconds() >= 1.0) {
+                if (stateTimer.seconds() >=2.5) //perfect amount of time for 1st shot
+                {
                     currentState = AutoState.START_FEEDER;
                 }
                 break;
@@ -99,7 +101,7 @@ public class AutonomousOpModeLoganBasic extends OpMode {
                 break;
 
             case WAIT_FOR_FEED:  // probably takes 2 seconds to shoot 4 balls
-                if (stateTimer.seconds() >= 2.0) {
+                if (stateTimer.seconds() >= 5.0) {
                     currentState = AutoState.STOP_LAUNCHER;
                 }
                 break;
@@ -112,6 +114,11 @@ public class AutonomousOpModeLoganBasic extends OpMode {
 
             case TURN_90_LEFT:
                 robot.turnTo(-90, 0.8, 0.25);
+                robot.toggleIntake();   //WE TURNNED ON THE INTAKE
+                currentState = AutoState.STRAFE_LEFT_2;
+                break;
+            case STRAFE_LEFT_2:
+                robot.strafe(2,0.90, 0.15);
                 currentState = AutoState.DRIVE_FORWARD_24;
                 break;
 
@@ -126,11 +133,11 @@ public class AutonomousOpModeLoganBasic extends OpMode {
                 break;
 
             case DRIVE_BACK_1:
-                robot.strafe( -12, 0.90,0.15); // Strafe left 10 inches
-                currentState = AutoState.STRAFE_LEFT_8;
+                robot.drive( -12, 0.90,0.15); // Strafe left 10 inches
+                currentState = AutoState.STRAFE_LEFT_7;
                 break;
-                case STRAFE_LEFT_8:
-                    robot.strafe( -96, 0.90,0.15); // Strafe left 10 inches
+                case STRAFE_LEFT_7:
+                    robot.strafe( -84, 0.90,0.15); // Strafe left 10 inches
                     currentState = AutoState.DRIVE_FORWARD_9;
                     break;
                     case DRIVE_FORWARD_9:

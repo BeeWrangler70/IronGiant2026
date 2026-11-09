@@ -35,10 +35,10 @@ public class LauncherTestOpModewFTCDashboard extends OpMode {
     private static final double MIN_VELOCITY = 0.0;
     private static final double MAX_VELOCITY = 3000.0;
     private static final double FEEDER_POWER = 1.0;
-    private static final double FEEDER_QUARTER_TURN_TIME_SECONDS = 0.25;
+    public static double FEEDER_QUARTER_TURN_TIME_SECONDS = 0.115;
 
     // FTC Dashboard configurable static variable starting at 1250
-    public static double targetVelocity = 1340;  //(close to our 1280)
+    public static double targetVelocity = 1140;  //(was 1280)
     public static double pGain = 15.0;
     public static double iGain = 0.0;
     public static double dGain = 0.0;
