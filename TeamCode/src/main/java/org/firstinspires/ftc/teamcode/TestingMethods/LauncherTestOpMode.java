@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.TestingMethods;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -20,6 +21,7 @@ import org.firstinspires.ftc.teamcode.GamepadController;
  *   <li>D-pad Down: Decrease Target Velocity (-50 Ticks/Sec)</li>
  * </ul>
  */
+@Disabled
 @TeleOp(name = "Launcher Test OpMode", group = "Test")
 public class LauncherTestOpMode extends OpMode {
 

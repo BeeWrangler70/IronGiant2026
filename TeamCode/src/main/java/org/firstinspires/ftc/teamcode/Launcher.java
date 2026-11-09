@@ -22,7 +22,12 @@ public class Launcher {
     public static final double FEEDER_POWER = 1.0;
 
     // Target Velocities in Encoder Ticks per Second
-    public static double LAUNCHER_TARGET_VELOCITY = 1400;             // Close Shot (~1280 RPM)
+    public static double LAUNCHER_TARGET_VELOCITY = 1280;
+
+    public static double pGain = 15.0;  //how quickly the motor will keep the speed between shots
+    public static double iGain = 0.0;
+    public static double dGain = 0.0;
+    public static double fGain = 13.6;  //forward gain on motor needed to get target velocity close to what we set
     public double launcherTargetVelocity = LAUNCHER_TARGET_VELOCITY;
 
     // Hardware Interface Objects
@@ -59,7 +64,7 @@ public class Launcher {
         launcherMotor.setDirection(DcMotorEx.Direction.FORWARD);
         launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         launcherMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        launcherMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(5.0, 0, 0, 12.0));
+        launcherMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(pGain, iGain, dGain, fGain));
 
         launcherFeeder = hardwareMap.crservo.get("launcher_feeder");
         launcherFeeder.setDirection(DcMotorSimple.Direction.FORWARD);
