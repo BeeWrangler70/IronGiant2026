@@ -24,7 +24,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
  *   <li>Left Bumper: Spin Launcher Feeder a Quarter Turn Backwards (~90°)</li>
  * </ul>
  */
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp - Robot Centric")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Robot Centric")
 public class TeleOp extends OpMode {
 
     // Drive Speed Modifiers

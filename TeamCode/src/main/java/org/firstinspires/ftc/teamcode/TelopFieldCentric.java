@@ -5,7 +5,7 @@ package org.firstinspires.ftc.teamcode;
  * Inherits all operator controls, subsystems, and telemetry from TeleOp,
  * and overrides drive execution for Field-Centric driving.
  */
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Telop Field Centric", group = "Iterative Opmode")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Field Centric", group = "Iterative Opmode")
 public class TelopFieldCentric extends TeleOp {
 
     @Override
