@@ -14,9 +14,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -56,7 +54,7 @@ public class HardwareAndFunctions {
 
     // Dedicated Subsystems
     public Launcher launcherSubsystem = new Launcher();
-    public Intake intakeSubsystem = new Intake();
+    public IntakeEject intakeEjectSubsystem = new IntakeEject();
 
     // Public Members
     public double driveDistance     = 0; // scaled axial distance (+ = forward)
@@ -149,7 +147,7 @@ public class HardwareAndFunctions {
 
         // Initialize the dedicated Launcher & Intake Subsystem
         launcherSubsystem.init(myOpMode.hardwareMap);
-        intakeSubsystem.init(myOpMode.hardwareMap);
+        intakeEjectSubsystem.init(myOpMode.hardwareMap);
 
         // Initialize the hardware variables. Note that the strings used to 'get' each
         // motor/device must match the names assigned during the robot configuration.
@@ -573,20 +571,23 @@ public class HardwareAndFunctions {
     // --- Intake Subsystem Methods ---
 
     public void setIntakePower(double power) {
-        intakeSubsystem.setPower(power);
+        intakeEjectSubsystem.setPower(power);
     }
 
     public void turnOnIntake() {
-        intakeSubsystem.turnOn();
+        intakeEjectSubsystem.turnOn();
     }
 
     public void stopIntake() {
-        intakeSubsystem.stop();
+        intakeEjectSubsystem.stop();
     }
 
     public void toggleIntake() {
-        intakeSubsystem.toggle();
+        intakeEjectSubsystem.toggle();
     }
+//    public void toggleIntakeForward() {
+//        intakeSubsystem.toggle();
+//    }
 }
 
 //****************************************************************************************************

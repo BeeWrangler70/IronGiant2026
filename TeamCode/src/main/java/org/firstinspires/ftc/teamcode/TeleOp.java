@@ -41,6 +41,8 @@ public class TeleOp extends OpMode {
     private GamepadController operator;
     private Launcher launcher;
 
+    private intakeForward driver;
+
     @Override
     public void init() {
         // Instantiate robot helper passing this OpMode
@@ -134,9 +136,16 @@ public class TeleOp extends OpMode {
         }
 
         // 3. Toggle Intake and Sweepers ON / OFF with 'X' Button single press
-        if (operator.xOnce()) {
+        if (driver.xOnce()) {
             robot.toggleIntake();
         }
+        if (driver.rightBumperOnce()) {
+            robot.intakeForward();
+        }
+
+//        if (driver.leftBumperOnce()) {
+//            robot.toggle IntakeForward();
+//        }
 
         // 4. Spin launcher feeder a quarter turn forward with Right Bumper single press
         if (operator.rightBumperOnce()) {
@@ -150,7 +159,7 @@ public class TeleOp extends OpMode {
 
         // 5. Adjust Launcher Target Velocity with D-Pad Up / Down (by +/- 50 ticks/sec)
         if (operator.dpadUpOnce()) {
-            launcher.launcherTargetVelocity += 50;
+            launcher.launcherTargetVelocity += 10;
             if (launcherActive) {
                 launcher.setLauncherVelocity(launcher.launcherTargetVelocity);
             }
@@ -177,12 +186,13 @@ public class TeleOp extends OpMode {
         telemetry.addData("--- Operator (Gamepad 2) ---", "");
         telemetry.addData("Launcher Status", launcherActive ? "RUNNING" : "STOPPED");
         telemetry.addData("Feeder Status", launcher.isFeederActive() ? "RUNNING" : "STOPPED");
-        telemetry.addData("Intake Status", robot.intakeSubsystem.isIntakeActive() ? "RUNNING" : "STOPPED");
+        telemetry.addData("Intake Status", robot.intakeEjectSubsystem.isIntakeActive() ? "RUNNING" : "STOPPED");
+        telemetry.addData("IntakeForward Status", robot.intakeForwardSubsystem.isIntakeForwardActive() ? "RUNNING" : "STOPPED");
         telemetry.addData("Target Velocity", "%.0f Ticks/Sec", launcher.launcherTargetVelocity);
         telemetry.addData("Current Velocity", "%.0f Ticks/Sec", launcher.getVelocity());
 
-        telemetry.addData("Left Sweeper", robot.intakeSubsystem.leftSweeper != null ? robot.intakeSubsystem.leftSweeper.getPower() : "NULL");
-        telemetry.addData("Right Sweeper", robot.intakeSubsystem.rightSweeper != null ? robot.intakeSubsystem.rightSweeper.getPower() : "NULL");
+        telemetry.addData("Left Sweeper", robot.intakeEjectSubsystem.leftSweeper != null ? robot.intakeEjectSubsystem.leftSweeper.getPower() : "NULL");
+        telemetry.addData("Right Sweeper", robot.intakeEjectSubsystem.rightSweeper != null ? robot.intakeEjectSubsystem.rightSweeper.getPower() : "NULL");
         telemetry.update();
     }
 

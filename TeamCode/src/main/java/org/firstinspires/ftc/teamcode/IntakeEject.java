@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 /**
  * Subsystem class responsible for managing the intake motor and sweepers.
  */
-public class Intake {
+public class IntakeEject {
 
     public static final double DEFAULT_INTAKE_POWER = 1.0;
     public static final double STOP_POWER = 0.0;
@@ -73,7 +73,7 @@ public class Intake {
      */
     public void stop() {
         setPower(STOP_POWER);
-        intakeActive = false;
+          intakeActive = false;
     }
 
     /**
@@ -86,12 +86,42 @@ public class Intake {
             turnOn();
         }
     }
-
+    /**
+     * Toggles the forward direction of the intake to expel balls and sweepers are OFF.
+     */
+//    intakeMotor.setDirection(DcMotorEx.Direction.FORWARD)
     public boolean isIntakeActive() {
+        /**
+         * Sets power to the intake motor and both sweepers.
+         *
+         * @param power Power level (-1.0 to 1.0).
+         */
+        public void setPower(double power) {
+            this.targetPower = power;
+            power = (0.0);
+            if (intakeMotor != null) {
+                intakeMotor.setPower(power);
+            }
+            if (leftSweeper != null) {
+                leftSweeper.setPower(power);
+            }
+            if (rightSweeper != null) {
+                rightSweeper.setPower(power);
+            }
+            intakeActive = (power != 0.0);
+        }
+        intakeMotor.setDirection(DcMotorEx.Direction.FORWARD);
+        {
+            intakeMotor.setPower(1.0);
+
+
+        intakeMotor.setDirection(DcMotorEx.Direction.REVERSE);
         return intakeActive;
+
     }
 
     public double getTargetPower() {
         return targetPower;
     }
 }
+    if IntakeForward

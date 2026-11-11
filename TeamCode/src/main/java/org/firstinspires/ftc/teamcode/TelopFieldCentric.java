@@ -167,7 +167,7 @@ public class TelopFieldCentric extends OpMode {
 
         // 5. Adjust Launcher Target Velocity with D-Pad Up / Down (by +/- 50 ticks/sec)
         if (operator.dpadUpOnce()) {
-            launcher.launcherTargetVelocity += 50;
+            launcher.launcherTargetVelocity += 10;
             if (launcherActive) {
                 launcher.setLauncherVelocity(launcher.launcherTargetVelocity);
             }
@@ -195,7 +195,7 @@ public class TelopFieldCentric extends OpMode {
         telemetry.addData("--- Operator (Gamepad 2) ---", "");
         telemetry.addData("Launcher Status", launcherActive ? "RUNNING" : "STOPPED");
         telemetry.addData("Feeder Status", launcher.isFeederActive() ? "RUNNING" : "STOPPED");
-        telemetry.addData("Intake Status", robot.intakeSubsystem.isIntakeActive() ? "RUNNING" : "STOPPED");
+        telemetry.addData("Intake Status", robot.intakeEjectSubsystem.isIntakeActive() ? "RUNNING" : "STOPPED");
         telemetry.addData("Target Velocity", "%.0f Ticks/Sec", launcher.launcherTargetVelocity);
         telemetry.addData("Current Velocity", "%.0f Ticks/Sec", launcher.getVelocity());
 
