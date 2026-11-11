@@ -10,14 +10,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * <p>
  * Sequence:
  * <ul>
- *   <li>Turn on launcher flywheel (wait 1 sec)</li>
- *   <li>Turn on launcher feeder for 2 seconds, then stop</li>
- *   <li>Drive forward 3 inches</li>
- *   <li>Strafe left 10 inches</li>
- *   <li>Turn 90 degrees left</li>
- *   <li>Turn on intake and drive forward 2 inches</li>
- *   <li>Turn 180 degrees to the right</li>
- *   <li>Stop</li>
+ *   <li>Turn on launcher flywheel (wait 1.5 sec)</li>
+ *   <li>Shoot 4 balls using feedQuarterTurn with 0.5 second waits between each shot</li>
+ *   <li>Stop launcher</li>
+ *   <li>Drive and strafe movements</li>
  * </ul>
  */
 @Autonomous(name = "Autonomous 1", group = "Autonomous")
@@ -27,12 +23,14 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
     private Launcher launcher;
     private final ElapsedTime stateTimer = new ElapsedTime();
     private final ElapsedTime holdTimer = new ElapsedTime();
+    private int ballsShot = 0;
 
     private enum AutoState {
         SPIN_UP_LAUNCHER,
         WAIT_FOR_SPIN_UP,
         START_FEEDER,
-        WAIT_FOR_FEED,
+        SHOOT_BALL,
+        WAIT_BETWEEN_SHOTS,
         STOP_LAUNCHER,
         DRIVE_FORWARD_1,
         DONE,
@@ -41,9 +39,7 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
         DRIVE_BACK_1,
         STRAFE_RIGHT_8,
         STRAFE_LEFT_3,
-        DRIVE_FORWARD_7_5,;
-
-
+        DRIVE_FORWARD_7_5
     }
 
     private AutoState currentState = AutoState.SPIN_UP_LAUNCHER;
@@ -65,6 +61,7 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
     public void start() {
         stateTimer.reset();
         holdTimer.reset();
+        ballsShot = 0;
         currentState = AutoState.SPIN_UP_LAUNCHER;
     }
 
@@ -82,20 +79,30 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
                 break;
 
             case WAIT_FOR_SPIN_UP:
-                if (stateTimer.seconds() >= 1.0) {
+                if (stateTimer.seconds() >= 1.5) {
                     currentState = AutoState.START_FEEDER;
                 }
                 break;
 
             case START_FEEDER:
-                robot.turnOnFeeder();
-                stateTimer.reset();
-                currentState = AutoState.WAIT_FOR_FEED;
+                ballsShot = 0;
+                currentState = AutoState.SHOOT_BALL;
                 break;
 
-            case WAIT_FOR_FEED:  // probably takes 2 seconds to shoot 4 balls
-                if (stateTimer.seconds() >= 2.0) {
+            case SHOOT_BALL:
+                if (ballsShot < 4) {
+                    robot.feedQuarterTurn();
+                    ballsShot++;
+                    stateTimer.reset();
+                    currentState = AutoState.WAIT_BETWEEN_SHOTS;
+                } else {
                     currentState = AutoState.STOP_LAUNCHER;
+                }
+                break;
+
+            case WAIT_BETWEEN_SHOTS:
+                if (stateTimer.seconds() >= 0.5) {
+                    currentState = AutoState.SHOOT_BALL;
                 }
                 break;
 
@@ -112,7 +119,7 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
 
             case STRAFE_LEFT_2:
                 robot.strafe( -24, 0.60,0.15); // Strafe left 10 inches
-                currentState = AutoState.DRIVE_FORWARD_7_5;;
+                currentState = AutoState.DRIVE_FORWARD_7_5;
                 break;
 
             case DRIVE_FORWARD_7_5:
@@ -134,6 +141,7 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
 
         // Telemetry status update
         telemetry.addData("Current State", currentState);
+        telemetry.addData("Balls Shot", "%d / 4", ballsShot);
         telemetry.addData("Position (X, Y)", "%.2f, %.2f", robot.driveDistance, robot.strafeDistance);
         telemetry.addData("Heading", "%.1f", robot.heading);
         telemetry.update();
