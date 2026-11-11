@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Launcher.LAUNCHER_STEP_UP_DOWN_VELOCITY;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 /**
@@ -26,22 +28,19 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 public class TeleOp extends OpMode {
 
     // Drive Speed Modifiers
-    private static final double NORMAL_DRIVE_SPEED = 0.8;
-    private static final double SLOW_DRIVE_SPEED = 0.4;
-    private static final double TURN_SPEED = 0.6;
-    private static final double STICK_CURVE_EXPONENT = 2.0; // Quadratic response curve for precision
+    protected static final double NORMAL_DRIVE_SPEED = 0.8;
+    protected static final double SLOW_DRIVE_SPEED = 0.4;
+    protected static final double TURN_SPEED = 0.6;
+    protected static final double STICK_CURVE_EXPONENT = 2.0; // Quadratic response curve for precision
 
     // State Variables
-    private boolean slowMode = false;
-    private boolean launcherActive = false;
+    protected boolean launcherActive = false;
 
     // Robot Hardware Reference & Gamepad Controllers
-    private HardwareAndFunctions robot;
-    private GamepadController driver;
-    private GamepadController operator;
-    private Launcher launcher;
-
-    private intakeForward driver;
+    protected HardwareAndFunctions robot;
+    protected GamepadController driver;
+    protected GamepadController operator;
+    protected Launcher launcher;
 
     @Override
     public void init() {
@@ -88,33 +87,23 @@ public class TeleOp extends OpMode {
         // --- DRIVER CONTROLS (GAMEPAD 1) ---
         // ==========================================
 
-        // 1. Toggle Slow Mode using Left Bumper (Single Press / Rising Edge)
-        if (driver.leftBumperOnce()) {
-            slowMode = !slowMode;
+        calculateAndExecuteDrive();
+
+        // 3. Toggle Intake and Sweepers ON / OFF with 'X' Button single press
+        if (driver.xOnce()) {
+            robot.toggleIntake();
         }
 
-        double speedMultiplier = slowMode ? SLOW_DRIVE_SPEED : NORMAL_DRIVE_SPEED;
-
-        // 2. Read Joystick Inputs with Exponential Response Curve & Deadzone
-        // Note: Negative sign aligns joystick direction (up on stick = positive forward drive)
-        double drive  = -driver.getLeftStickYCurve(STICK_CURVE_EXPONENT) * speedMultiplier;
-        double strafe = -driver.getLeftStickXCurve(STICK_CURVE_EXPONENT) * speedMultiplier;
-        double yaw    = -driver.getRightStickXCurve(STICK_CURVE_EXPONENT) * TURN_SPEED;
-
-        // 3. Precise Micro-Stepping using D-Pad (overrides joystick input when pressed)
-        if (driver.isDown(GamepadController.Button.DPAD_UP)) {
-            drive = SLOW_DRIVE_SPEED / 2.0;
-        } else if (driver.isDown(GamepadController.Button.DPAD_DOWN)) {
-            drive = -SLOW_DRIVE_SPEED / 2.0;
-        } else if (driver.isDown(GamepadController.Button.DPAD_LEFT)) {
-            strafe = SLOW_DRIVE_SPEED / 2.0;
-        } else if (driver.isDown(GamepadController.Button.DPAD_RIGHT)) {
-            strafe = -SLOW_DRIVE_SPEED / 2.0;
+        // 4. Reverse the intake while the right bumper is held down
+        if (driver.isDown(GamepadController.Button.RIGHT_BUMPER)) {
+            robot.reverseIntake();
+        } else {
+            if (robot.intakeSubsystem.isIntakeActive()) {
+                robot.intakeSubsystem.setPower(robot.intakeSubsystem.getTargetPower());
+            } else {
+                robot.stopIntake();
+            }
         }
-
-        // Send movement command to hardware
-        robot.moveRobot(drive, strafe, yaw);
-
 
         // ==========================================
         // --- OPERATOR CONTROLS (GAMEPAD 2) ---
@@ -131,20 +120,12 @@ public class TeleOp extends OpMode {
         }
 
         // 2. Toggle Launcher Feeder Continuous ON / OFF with 'B' Button single press
-        if (operator.bOnce()) {
-            launcher.toggleFeeder();
-        }
-
-        // 3. Toggle Intake and Sweepers ON / OFF with 'X' Button single press
-        if (driver.xOnce()) {
-            robot.toggleIntake();
-        }
-        if (driver.rightBumperOnce()) {
-            robot.intakeForward();
-        }
-
-//        if (driver.leftBumperOnce()) {
-//            robot.toggle IntakeForward();
+        /*
+        TURNING THIS FUNCTION OFF FOR NOW UNTIL WE GET DONE WITH SCRIMMAGE
+        WE WILL COME BACK AND TRY TO FIX THIS IN OUR lAUNCHER TESTOP PROGRAM
+         */
+//        if (operator.bOnce()) {
+//            launcher.toggleFeeder();
 //        }
 
         // 4. Spin launcher feeder a quarter turn forward with Right Bumper single press
@@ -157,43 +138,65 @@ public class TeleOp extends OpMode {
             robot.feedQuarterTurnBackwards();
         }
 
-        // 5. Adjust Launcher Target Velocity with D-Pad Up / Down (by +/- 50 ticks/sec)
+        // 5. Adjust Launcher Target Velocity with D-Pad Up / Down (by +/- speed step)
         if (operator.dpadUpOnce()) {
-            launcher.launcherTargetVelocity += 10;
+            launcher.launcherTargetVelocity += LAUNCHER_STEP_UP_DOWN_VELOCITY;
             if (launcherActive) {
                 launcher.setLauncherVelocity(launcher.launcherTargetVelocity);
             }
         } else if (operator.dpadDownOnce()) {
-            launcher.launcherTargetVelocity = Math.max(0, launcher.launcherTargetVelocity - 50);
+            launcher.launcherTargetVelocity = Math.max(0, launcher.launcherTargetVelocity - LAUNCHER_STEP_UP_DOWN_VELOCITY);
             if (launcherActive) {
                 launcher.setLauncherVelocity(launcher.launcherTargetVelocity);
             }
         }
 
-
         // ==========================================
         // --- TELEMETRY / DIAGNOSTICS ---
         // ==========================================
 
-        telemetry.addData("--- Odometry Position ---", "");
-        telemetry.addData("Odo X, Y (in)", "X: %.2f | Y: %.2f", robot.driveDistance, robot.strafeDistance);
-        telemetry.addData("Heading", "%.1f deg", robot.heading);
+//        telemetry.addData("--- Odometry Position ---", "");
+//        telemetry.addData("Odo X, Y (in)", "X: %.2f | Y: %.2f", robot.driveDistance, robot.strafeDistance);
+//        telemetry.addData("Heading", "%.1f deg", robot.heading);
 
-        telemetry.addData("--- Driver (Gamepad 1) ---", "");
-        telemetry.addData("Slow Mode", slowMode ? "ENABLED (50%)" : "DISABLED (100%)");
-        telemetry.addData("Drive Powers", "Fwd: %.2f | Str: %.2f | Yaw: %.2f", drive, strafe, yaw);
+//        telemetry.addData("--- Driver (Gamepad 1) ---", "");
 
         telemetry.addData("--- Operator (Gamepad 2) ---", "");
-        telemetry.addData("Launcher Status", launcherActive ? "RUNNING" : "STOPPED");
-        telemetry.addData("Feeder Status", launcher.isFeederActive() ? "RUNNING" : "STOPPED");
-        telemetry.addData("Intake Status", robot.intakeEjectSubsystem.isIntakeActive() ? "RUNNING" : "STOPPED");
-        telemetry.addData("IntakeForward Status", robot.intakeForwardSubsystem.isIntakeForwardActive() ? "RUNNING" : "STOPPED");
+//        telemetry.addData("Launcher Status", launcherActive ? "RUNNING" : "STOPPED");
+//        telemetry.addData("Feeder Status", launcher.isFeederActive() ? "RUNNING" : "STOPPED");
+//        telemetry.addData("Intake Status", robot.intakeSubsystem.isIntakeActive() ? "RUNNING" : "STOPPED");
         telemetry.addData("Target Velocity", "%.0f Ticks/Sec", launcher.launcherTargetVelocity);
         telemetry.addData("Current Velocity", "%.0f Ticks/Sec", launcher.getVelocity());
+        telemetry.addData("Battery Voltage", "%.2f V", robot.getBatteryVoltage());
 
-        telemetry.addData("Left Sweeper", robot.intakeEjectSubsystem.leftSweeper != null ? robot.intakeEjectSubsystem.leftSweeper.getPower() : "NULL");
-        telemetry.addData("Right Sweeper", robot.intakeEjectSubsystem.rightSweeper != null ? robot.intakeEjectSubsystem.rightSweeper.getPower() : "NULL");
+//        telemetry.addData("Left Sweeper", robot.intakeSubsystem.leftSweeper != null ? robot.intakeSubsystem.leftSweeper.getPower() : "NULL");
+//        telemetry.addData("Right Sweeper", robot.intakeSubsystem.rightSweeper != null ? robot.intakeSubsystem.rightSweeper.getPower() : "NULL");
         telemetry.update();
+    }
+
+    /**
+     * Calculates drive, strafe, and yaw powers and commands the robot.
+     * Can be overridden by subclasses (e.g. TelopFieldCentric).
+     */
+    protected void calculateAndExecuteDrive() {
+        // 1. Read Joystick Inputs with Exponential Response Curve & Deadzone
+        double drive  = -driver.getLeftStickYCurve(STICK_CURVE_EXPONENT);
+        double strafe = -driver.getLeftStickXCurve(STICK_CURVE_EXPONENT);
+        double yaw    = -driver.getRightStickXCurve(STICK_CURVE_EXPONENT) * TURN_SPEED;
+
+        // 2. Precise Micro-Stepping using D-Pad (overrides joystick input when pressed)
+        if (driver.isDown(GamepadController.Button.DPAD_UP)) {
+            drive = SLOW_DRIVE_SPEED / 2.0;
+        } else if (driver.isDown(GamepadController.Button.DPAD_DOWN)) {
+            drive = -SLOW_DRIVE_SPEED / 2.0;
+        } else if (driver.isDown(GamepadController.Button.DPAD_LEFT)) {
+            strafe = SLOW_DRIVE_SPEED / 2.0;
+        } else if (driver.isDown(GamepadController.Button.DPAD_RIGHT)) {
+            strafe = -SLOW_DRIVE_SPEED / 2.0;
+        }
+
+        // Send movement command to hardware
+        robot.moveRobot(drive, strafe, yaw);
     }
 
     @Override

@@ -20,7 +20,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  *   <li>Stop</li>
  * </ul>
  */
-@Autonomous(name = "Bronson Basic Autonomous", group = "Autonomous")
+@Autonomous(name = "Autonomous 1", group = "Autonomous")
 public class AutonomousOpModeBronsonBasic extends OpMode {
 
     private HardwareAndFunctions robot;

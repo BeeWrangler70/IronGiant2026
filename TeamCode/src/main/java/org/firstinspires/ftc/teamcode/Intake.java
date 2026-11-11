@@ -7,9 +7,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 /**
- * Subsystem class responsible for managing the intake motor and sweepers.
+ * Subsystem class responsible for managing the intake motor, sweepers, and ejection/reversal.
  */
-public class IntakeEject {
+public class Intake {
 
     public static final double DEFAULT_INTAKE_POWER = 1.0;
     public static final double STOP_POWER = 0.0;
@@ -29,9 +29,9 @@ public class IntakeEject {
     public void init(HardwareMap hardwareMap) {
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
         intakeMotor.setDirection(DcMotorEx.Direction.REVERSE);
-        intakeMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        intakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        intakeMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         leftSweeper = hardwareMap.crservo.get("left_sweeper");
         leftSweeper.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -73,7 +73,7 @@ public class IntakeEject {
      */
     public void stop() {
         setPower(STOP_POWER);
-          intakeActive = false;
+        intakeActive = false;
     }
 
     /**
@@ -86,42 +86,28 @@ public class IntakeEject {
             turnOn();
         }
     }
+
     /**
-     * Toggles the forward direction of the intake to expel balls and sweepers are OFF.
+     * Reverses the intake motor and sweepers when called (e.g. ejection/reverse).
      */
-//    intakeMotor.setDirection(DcMotorEx.Direction.FORWARD)
-    public boolean isIntakeActive() {
-        /**
-         * Sets power to the intake motor and both sweepers.
-         *
-         * @param power Power level (-1.0 to 1.0).
-         */
-        public void setPower(double power) {
-            this.targetPower = power;
-            power = (0.0);
-            if (intakeMotor != null) {
-                intakeMotor.setPower(power);
-            }
-            if (leftSweeper != null) {
-                leftSweeper.setPower(power);
-            }
-            if (rightSweeper != null) {
-                rightSweeper.setPower(power);
-            }
-            intakeActive = (power != 0.0);
+    public void reverse() {
+        double revPower = -Math.abs(targetPower != 0 ? targetPower : DEFAULT_INTAKE_POWER);
+        if (intakeMotor != null) {
+            intakeMotor.setPower(revPower);
         }
-        intakeMotor.setDirection(DcMotorEx.Direction.FORWARD);
-        {
-            intakeMotor.setPower(1.0);
+        if (leftSweeper != null) {
+            leftSweeper.setPower(revPower);
+        }
+        if (rightSweeper != null) {
+            rightSweeper.setPower(revPower);
+        }
+    }
 
-
-        intakeMotor.setDirection(DcMotorEx.Direction.REVERSE);
+    public boolean isIntakeActive() {
         return intakeActive;
-
     }
 
     public double getTargetPower() {
         return targetPower;
     }
 }
-    if IntakeForward

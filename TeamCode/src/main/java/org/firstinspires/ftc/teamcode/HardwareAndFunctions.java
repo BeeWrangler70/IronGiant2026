@@ -54,7 +54,7 @@ public class HardwareAndFunctions {
 
     // Dedicated Subsystems
     public Launcher launcherSubsystem = new Launcher();
-    public IntakeEject intakeEjectSubsystem = new IntakeEject();
+    public Intake intakeSubsystem = new Intake();
 
     // Public Members
     public double driveDistance     = 0; // scaled axial distance (+ = forward)
@@ -147,7 +147,7 @@ public class HardwareAndFunctions {
 
         // Initialize the dedicated Launcher & Intake Subsystem
         launcherSubsystem.init(myOpMode.hardwareMap);
-        intakeEjectSubsystem.init(myOpMode.hardwareMap);
+        intakeSubsystem.init(myOpMode.hardwareMap);
 
         // Initialize the hardware variables. Note that the strings used to 'get' each
         // motor/device must match the names assigned during the robot configuration.
@@ -571,23 +571,41 @@ public class HardwareAndFunctions {
     // --- Intake Subsystem Methods ---
 
     public void setIntakePower(double power) {
-        intakeEjectSubsystem.setPower(power);
+        intakeSubsystem.setPower(power);
     }
 
     public void turnOnIntake() {
-        intakeEjectSubsystem.turnOn();
+        intakeSubsystem.turnOn();
     }
 
     public void stopIntake() {
-        intakeEjectSubsystem.stop();
+        intakeSubsystem.stop();
     }
 
     public void toggleIntake() {
-        intakeEjectSubsystem.toggle();
+        intakeSubsystem.toggle();
     }
-//    public void toggleIntakeForward() {
-//        intakeSubsystem.toggle();
-//    }
+
+    public void reverseIntake() {
+        intakeSubsystem.reverse();
+    }
+
+    // --- Battery Voltage ---
+
+    /**
+     * Gets the current battery voltage of the robot.
+     * @return voltage in volts (V)
+     */
+    public double getBatteryVoltage() {
+        double result = Double.POSITIVE_INFINITY;
+        for (com.qualcomm.robotcore.hardware.VoltageSensor sensor : myOpMode.hardwareMap.voltageSensor) {
+            double voltage = sensor.getVoltage();
+            if (voltage > 0) {
+                result = Math.min(result, voltage);
+            }
+        }
+        return (result == Double.POSITIVE_INFINITY) ? 0.0 : result;
+    }
 }
 
 //****************************************************************************************************

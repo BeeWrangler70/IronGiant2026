@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.Launcher;
  * </ul>
  */
 @Disabled
-@Autonomous(name = "Bronson Linear Autonomous", group = "Autonomous")
+@Autonomous(name = "Autonomous 1", group = "Autonomous")
 public class AutonomousOpModeBronsonLinear extends LinearOpMode {
 
     private HardwareAndFunctions robot;

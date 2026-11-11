@@ -16,14 +16,14 @@ public class Launcher {
 
     // Timing and Speed Constants
     public static double FEED_TIME_SECONDS = 0.5;     // Time (in seconds) to rotate feeder servo ~1/2 turn.
-    public static double FEEDER_QUARTER_TURN_TIME_SECONDS = 0.110; // Time (in seconds) to rotate feeder servo ~1/4 turn.
+    public static double FEEDER_QUARTER_TURN_TIME_SECONDS = 0.105; // Time (in seconds) to rotate feeder servo ~1/4 turn.
     public static double LAUNCH_DELAY_SECONDS = 0.5;  // Delay before feeding ball to ensure flywheel is stabilized at target speed.
     public static final double STOP_SPEED = 0.0;
     public static final double FEEDER_POWER = 1.0;
 
     // Target Velocities in Encoder Ticks per Second
     public static double LAUNCHER_TARGET_VELOCITY = 1190;  //was 1280
-
+    public static double LAUNCHER_STEP_UP_DOWN_VELOCITY = 10;  //Used to fine tune velocity
     public static double pGain = 15.0;  //how quickly the motor will keep the speed between shots
     public static double iGain = 0.0;
     public static double dGain = 0.0;

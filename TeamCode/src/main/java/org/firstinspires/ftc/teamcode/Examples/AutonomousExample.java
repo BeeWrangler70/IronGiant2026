@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Examples;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.HardwareAndFunctions;
@@ -22,6 +23,7 @@ import org.firstinspires.ftc.teamcode.Launcher;
  *   <li>Stop</li>
  * </ul>
  */
+@Disabled
 @Autonomous(name = "Basic Autonomous", group = "Autonomous")
 public class AutonomousExample extends LinearOpMode {
 

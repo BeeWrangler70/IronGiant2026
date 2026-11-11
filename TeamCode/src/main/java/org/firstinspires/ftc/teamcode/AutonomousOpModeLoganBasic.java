@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -20,6 +21,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  *   <li>Stop</li>
  * </ul>
  */
+@Disabled
 @Autonomous(name = "Logan Basic Autonomous", group = "Autonomous")
 public class AutonomousOpModeLoganBasic extends OpMode {
 

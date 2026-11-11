@@ -47,9 +47,9 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
  * Since the dynamics of a launcher wheel system varies greatly from those of most other FTC mechanisms,
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
-
-@TeleOp(name = "Mec BioBuzz StarterBot Teleop", group = "StarterBot")
 @Disabled
+@TeleOp(name = "Mec BioBuzz StarterBot Teleop", group = "StarterBot")
+
 public class BioBuzzStarterbotTeleopMecanum extends OpMode {
 
     // Declare OpMode members.
