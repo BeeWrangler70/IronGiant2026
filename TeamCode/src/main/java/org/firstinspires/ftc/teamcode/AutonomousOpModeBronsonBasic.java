@@ -25,6 +25,11 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
     private final ElapsedTime holdTimer = new ElapsedTime();
     private int ballsShot = 0;
 
+    private final double WAIT_FOR_SPIN_UP_TIME = 1.5;
+    private final int BALLS_TO_SHOOT = 6;
+
+    private final double WAIT_BETWEEN_SHOTS_TIME = 0.75;
+
     private enum AutoState {
         SPIN_UP_LAUNCHER,
         WAIT_FOR_SPIN_UP,
@@ -79,7 +84,7 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
                 break;
 
             case WAIT_FOR_SPIN_UP:
-                if (stateTimer.seconds() >= 1.5) {
+                if (stateTimer.seconds() >= WAIT_FOR_SPIN_UP_TIME) {
                     currentState = AutoState.START_FEEDER;
                 }
                 break;
@@ -90,7 +95,7 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
                 break;
 
             case SHOOT_BALL:
-                if (ballsShot < 4) {
+                if (ballsShot < BALLS_TO_SHOOT) {
                     robot.feedQuarterTurn();
                     ballsShot++;
                     stateTimer.reset();
@@ -101,7 +106,7 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
                 break;
 
             case WAIT_BETWEEN_SHOTS:
-                if (stateTimer.seconds() >= 0.5) {
+                if (stateTimer.seconds() >= WAIT_BETWEEN_SHOTS_TIME) {
                     currentState = AutoState.SHOOT_BALL;
                 }
                 break;
@@ -140,11 +145,7 @@ public class AutonomousOpModeBronsonBasic extends OpMode {
         }
 
         // Telemetry status update
-        telemetry.addData("Current State", currentState);
-        telemetry.addData("Balls Shot", "%d / 4", ballsShot);
-        telemetry.addData("Position (X, Y)", "%.2f, %.2f", robot.driveDistance, robot.strafeDistance);
-        telemetry.addData("Heading", "%.1f", robot.heading);
-        telemetry.update();
+        robot.sendTelemetry(currentState, ballsShot);
     }
 
     @Override

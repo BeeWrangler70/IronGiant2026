@@ -154,24 +154,7 @@ public class TeleOp extends OpMode {
         // ==========================================
         // --- TELEMETRY / DIAGNOSTICS ---
         // ==========================================
-
-//        telemetry.addData("--- Odometry Position ---", "");
-//        telemetry.addData("Odo X, Y (in)", "X: %.2f | Y: %.2f", robot.driveDistance, robot.strafeDistance);
-//        telemetry.addData("Heading", "%.1f deg", robot.heading);
-
-//        telemetry.addData("--- Driver (Gamepad 1) ---", "");
-
-        telemetry.addData("--- Operator (Gamepad 2) ---", "");
-//        telemetry.addData("Launcher Status", launcherActive ? "RUNNING" : "STOPPED");
-//        telemetry.addData("Feeder Status", launcher.isFeederActive() ? "RUNNING" : "STOPPED");
-//        telemetry.addData("Intake Status", robot.intakeSubsystem.isIntakeActive() ? "RUNNING" : "STOPPED");
-        telemetry.addData("Target Velocity", "%.0f Ticks/Sec", launcher.launcherTargetVelocity);
-        telemetry.addData("Current Velocity", "%.0f Ticks/Sec", launcher.getVelocity());
-        telemetry.addData("Battery Voltage", "%.2f V", robot.getBatteryVoltage());
-
-//        telemetry.addData("Left Sweeper", robot.intakeSubsystem.leftSweeper != null ? robot.intakeSubsystem.leftSweeper.getPower() : "NULL");
-//        telemetry.addData("Right Sweeper", robot.intakeSubsystem.rightSweeper != null ? robot.intakeSubsystem.rightSweeper.getPower() : "NULL");
-        telemetry.update();
+        robot.sendTelemetry();
     }
 
     /**

@@ -14,8 +14,11 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -598,13 +601,58 @@ public class HardwareAndFunctions {
      */
     public double getBatteryVoltage() {
         double result = Double.POSITIVE_INFINITY;
-        for (com.qualcomm.robotcore.hardware.VoltageSensor sensor : myOpMode.hardwareMap.voltageSensor) {
+        for (VoltageSensor sensor : myOpMode.hardwareMap.voltageSensor) {
             double voltage = sensor.getVoltage();
             if (voltage > 0) {
                 result = Math.min(result, voltage);
             }
         }
         return (result == Double.POSITIVE_INFINITY) ? 0.0 : result;
+    }
+
+    // --- Telemetry & Diagnostics ---
+
+    /**
+     * Sends standard diagnostics and telemetry to the Driver Station.
+     */
+    public void sendTelemetry() {
+        sendTelemetry(null, 0);
+    }
+
+    /**
+     * Sends comprehensive diagnostics and telemetry, optionally including autonomous state and balls shot.
+     * Keeps all active and commented-out telemetry lines.
+     *
+     * @param currentState Current autonomous state enum (or null if in TeleOp)
+     * @param ballsShot    Number of balls shot so far
+     */
+    public void sendTelemetry(Enum<?> currentState, int ballsShot) {
+        if (currentState != null) {
+            myOpMode.telemetry.addData("Current State", currentState);
+            myOpMode.telemetry.addData("Balls Shot", "%d / 4", ballsShot);
+        }
+
+//        myOpMode.telemetry.addData("--- Odometry Position ---", "");
+//        myOpMode.telemetry.addData("Odo X, Y (in)", "X: %.2f | Y: %.2f", driveDistance, strafeDistance);
+//        myOpMode.telemetry.addData("Heading", "%.1f deg", heading);
+
+        myOpMode.telemetry.addData("Position (X, Y)", "%.2f, %.2f", driveDistance, strafeDistance);
+        myOpMode.telemetry.addData("Heading", "%.1f", heading);
+
+//        myOpMode.telemetry.addData("--- Driver (Gamepad 1) ---", "");
+
+        myOpMode.telemetry.addData("--- Operator (Gamepad 2) ---", "");
+//        myOpMode.telemetry.addData("Launcher Status", launcherSubsystem.launcherTargetVelocity > 0 ? "RUNNING" : "STOPPED");
+//        myOpMode.telemetry.addData("Feeder Status", launcherSubsystem.isFeederActive() ? "RUNNING" : "STOPPED");
+//        myOpMode.telemetry.addData("Intake Status", intakeSubsystem.isIntakeActive() ? "RUNNING" : "STOPPED");
+        myOpMode.telemetry.addData("Target Velocity", "%.0f Ticks/Sec", launcherSubsystem.launcherTargetVelocity);
+        myOpMode.telemetry.addData("Current Velocity", "%.0f Ticks/Sec", launcherSubsystem.getVelocity());
+        myOpMode.telemetry.addData("Battery Voltage", "%.2f V", getBatteryVoltage());
+
+//        myOpMode.telemetry.addData("Left Sweeper", intakeSubsystem.leftSweeper != null ? intakeSubsystem.leftSweeper.getPower() : "NULL");
+//        myOpMode.telemetry.addData("Right Sweeper", intakeSubsystem.rightSweeper != null ? intakeSubsystem.rightSweeper.getPower() : "NULL");
+
+        myOpMode.telemetry.update();
     }
 }
 
